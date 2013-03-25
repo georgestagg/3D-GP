@@ -2,8 +2,8 @@ module runparam
 INTEGER :: s,ls=1,le=1
 end module
 module plane
-INTEGER,PARAMETER :: NX = 512,NY=128
-DOUBLE PRECISION :: dspace = 0.8d0,PI = 4.0d0*ATAN(1.0d0), norm, vob
+INTEGER,PARAMETER :: NX = 2048,NY=512
+DOUBLE PRECISION :: dspace = 0.4d0,PI = 4.0d0*ATAN(1.0d0), norm, vob
 COMPLEX*16, DIMENSION(-NX/2:NX/2,-NY/2:NY/2) :: grid,vtrap,boundary,koch=0.0d0
 DOUBLE PRECISION, DIMENSION(-NX/2:NX/2,-NY/2:NY/2,2) :: fvec
 INTEGER, DIMENSION(0:NX*NY,0:1) :: ktrack
@@ -31,7 +31,7 @@ PROGRAM gp
 		double precision ::s,ns,ox,oy
    		END SUBROUTINE
 	END INTERFACE
-	DO loopno =50,50,2
+	DO loopno =44,44,4
 			!Initialise
 			koch = 0.0d0
 			grid = 0
@@ -43,7 +43,6 @@ PROGRAM gp
 			!!!!!!!!!!!!!
 			WRITE(fname, '(a,i0)') 'energy.',loopno
 			OPEN (8, FILE = fname)
-			!!!snowflake main
 			ktrack = -8000000
 			klength = 0
 			boundary = 0
@@ -54,172 +53,26 @@ PROGRAM gp
 			itime=0
 			vob=loopno/100.0d0
 			dt = (0.01d0,0)		
+			CALL RUNIT(200,dt,1,0)
+			CALL ADDNOISE
 			CALL RUNIT(300000,dt,1,1)
 	END DO
 END PROGRAM gp
 
 
-SUBROUTINE GET_KOCH_BOUNDARY
+
+SUBROUTINE ADDNOISE
 use plane
 use runparam
 use timee
 IMPLICIT NONE
-integer :: i,j,k,l,reti,retj
+integer :: i,j
 DO i = -NX/2, NX/2
 DO j = -NY/2, NY/2
-        if(DBLE(koch(i,j)) > 9.9d0) then
-        DO k = i-30, i+30
-        DO l = j-30, j+30
-                boundary(k,l) = 1.0d0
-        END DO
-        END DO
-        end if
+	grid(i,j) = grid(i,j) + CMPLX((RAND()/100.0d0)-(1.0d0/200.0d0),(RAND()/100.0d0)-(1.0d0/200.0d0))	
 END DO
 END DO
 END SUBROUTINE
-
-SUBROUTINE SMOOTH_KOCH
-use plane
-use runparam
-use timee
-IMPLICIT NONE
-integer :: i,j,reti,retj
-DO i = -NX/2, NX/2
-DO j = -NY/2, -10
-	if(DBLE(koch(i,j)) < 0.3d0) then
-	CALL GET_CLOSEST_POINT_IN_KOCH(i,j,reti,retj)
-	koch(i,j) = 10.0d0*EXP(-0.01d0*((DBLE(i-reti)*dspace))**2.0d0 - 0.01d0*((DBLE(j-retj)*dspace))**2.0d0)
-	end if
-END DO
-END DO
-END SUBROUTINE
-
-SUBROUTINE GET_CLOSEST_POINT_IN_KOCH(x,y,reti,retj)
-use plane
-use runparam
-use timee
-IMPLICIT NONE
-integer :: i,x,y,reti,retj
-DOUBLE PRECISION :: pointlength
-INTEGER, DIMENSION(0:2) :: ClPointTracker
-	ClPointTracker(0) = -9000000
-	ClPointTracker(1) = -9000000
-	ClPointTracker(2) = HUGE(0)
-	DO i = 0, klength-1
-		pointlength = SQRT(DBLE((x-ktrack(i,0))*(x-ktrack(i,0)) + (y-ktrack(i,1))*(y-ktrack(i,1))))
-		if(pointlength < ClPointTracker(2)) then
-			ClPointTracker(0) = ktrack(i,0)
-			ClPointTracker(1) = ktrack(i,1)
-			ClPointTracker(2) = pointlength
-		end if
-	end do
-	reti = ClPointTracker(0)
-	retj = ClPointTracker(1) 
-END SUBROUTINE
-
-RECURSIVE SUBROUTINE KOCHLOOP(s,oix,oiy,iter1,iter2,iter3,iter4,iter5,iter6)
-IMPLICIT NONE
-INTEGER :: iter1,iter2,iter3,iter4,iter5,iter6,n
-integer :: oix,oiy
-double precision ::s,ns,ox,oy
-ns= s/3.0d0
-ox=DBLE(oix)
-oy=DBLE(oiy)
-
-CALL MAKE_KOCH(INT(ox-1.0d0/2.0d0*s + ns/2.0d0),INT(oy + (s-ns)*2.0d0/3.0d0*(sqrt(3.0d0)/2.0d0)),ns,0)
-CALL MAKE_KOCH(INT(ox+1.0d0/2.0d0*s - ns/2.0d0),INT(oy + (s-ns)*2.0d0/3.0d0*(sqrt(3.0d0)/2.0d0)),ns,0)
-CALL MAKE_KOCH(INT(ox),INT(oy + (s+ns)*2.0d0/3.0d0*(sqrt(3.0d0)/2.0d0)),ns,1)
-CALL MAKE_KOCH(INT(ox-1.0d0/2.0d0*s + ns/2.0d0),INT(oy + (ns)*2.0d0/3.0d0*(sqrt(3.0d0)/2.0d0)),ns,1)
-CALL MAKE_KOCH(INT(ox+1.0d0/2.0d0*s - ns/2.0d0),INT(oy + (ns)*2.0d0/3.0d0*(sqrt(3.0d0)/2.0d0)),ns,1)
-CALL MAKE_KOCH(INT(ox),INT(oy - (ns)*2.0d0/3.0d0*(sqrt(3.0d0)/2.0d0)),ns,0)
-
-if (iter1 < 1) then
-CALL KOCHLOOP(ns,INT(ox-1.0d0/2.0d0*s + ns/2.0d0),&
-INT(oy + (s-ns)*2.0d0/3.0d0*(sqrt(3.0d0)/2.0d0)),iter1+1,iter2+1,iter3+1,iter4+1,iter5+1,iter6+1)
-end if
-if (iter2 < 1) then
-CALL KOCHLOOP(ns,INT(ox+1.0d0/2.0d0*s - ns/2.0d0),&
-INT(oy + (s-ns)*2.0d0/3.0d0*(sqrt(3.0d0)/2.0d0)),iter1+1,iter2+1,iter3+1,iter4+1,iter5+1,iter6+1)
-end if
-if (iter3 < 1) then
-CALL KOCHLOOP(ns,INT(ox),&
-INT(oy + s*2.0d0/3.0d0*(sqrt(3.0d0)/2.0d0)),iter1+1,iter2+1,iter3+1,iter4+1,iter5+1,iter6+1)
-end if
-if (iter4 < 1) then
-CALL KOCHLOOP(ns,INT(ox-1.0d0/2.0d0*s + ns/2.0d0),&
-INT(oy),iter1+1,iter2+1,iter3+1,iter4+1,iter5+1,iter6+1)
-end if
-if (iter5 < 1) then
-CALL KOCHLOOP(ns,INT(ox+1.0d0/2.0d0*s - ns/2.0d0),&
-INT(oy),iter1+1,iter2+1,iter3+1,iter4+1,iter5+1,iter6+1)
-end if
-if (iter6 < 1) then
-CALL KOCHLOOP(ns,INT(ox),&
-INT(oy - (ns+2)*2.0d0/3.0d0*(sqrt(3.0d0)/2.0d0)),iter1+1,iter2+1,iter3+1,iter4+1,iter5+1,iter6+1)
-end if
-END SUBROUTINE
-
-SUBROUTINE MAKE_KOCH(xx,yy,big,flip)
-use plane
-use runparam
-use timee
-IMPLICIT NONE
-integer :: i,j,k,l,xx,yy,flip
-double precision :: length,big
-
-length=big/2.0d0
-
-if (flip == 0) then
-DO j = yy, NY/2
-	if(j.eq.yy)then
-		DO i = (INT(-length)+xx), (INT(length)+xx) !flat side of triangle
-			ktrack(klength,0) = i
-			ktrack(klength,1) = j
-			klength = klength + 1 
-		end do
-	end if
-	DO i = (INT(-length)+xx), (INT(length)+xx)
-		koch(i,j) = 10.0d0
-	end do
-	ktrack(klength,0) = (INT(-length)+xx)
-	ktrack(klength,1) = j
-	klength = klength + 1 				!edge of triangles
-	ktrack(klength,0) = (INT(length)+xx)
-	ktrack(klength,1) = j
-	klength = klength + 1 
-
-	length = length - 1.0d0/sqrt(3.0d0)
-	if (length<1.0d0) then
-		exit
-	end if
-end do
-else
-DO j = yy, -NY/2,-1
-	if(j.eq.yy)then
-		DO i = (INT(-length)+xx), (INT(length)+xx) !flat side of triangle
-			ktrack(klength,0) = i
-			ktrack(klength,1) = j
-			klength = klength + 1 
-		end do
-	end if
-
-	DO i = (INT(-length)+xx), (INT(length)+xx)
-		koch(i,j) = 10.0d0
-	end do
-	ktrack(klength,0) = (INT(-length)+xx)
-	ktrack(klength,1) = j
-	klength = klength + 1 				!edge of triangles
-	ktrack(klength,0) = (INT(length)+xx)
-	ktrack(klength,1) = j
-	klength = klength + 1 
-
-	length = length - 1.0d0/sqrt(3.0d0)
-	if (length<1.0d0) then
-		exit
-	end if
-end do
-end if
-end subroutine
 
 SUBROUTINE RUNIT(steps,dt,rt,plot)	
 	use plane
@@ -247,10 +100,13 @@ SUBROUTINE RUNIT(steps,dt,rt,plot)
 			CLOSE(10)
 			IF (rt == 1) THEN
 				IF (plot == 1) THEN
-				CALL PLOT3D(I)	
+				!CALL PLOT3D(I)	
 				CALL PLOTVORTICITY (I)
 				END IF	
 			END IF
+		END IF
+		IF (MODULO(I,1000) == 0) THEN
+			CALL PLOT3D(I)
 		END IF
 	END DO
 END SUBROUTINE
@@ -281,12 +137,17 @@ SUBROUTINE CALC_VTRAP (obj)
 	use timee
 	IMPLICIT NONE
 	INTEGER :: i,j,obj
-	DOUBLE PRECISION :: T,v,xdash
+	DOUBLE PRECISION :: T,v,xdash,rx,ry,d1,d2,eps
 	COMPLEX*16, DIMENSION(-NX/2:NX/2,-NY/2:NY/2) :: vobj
 	!vtrap = koch
+	eps = 3.0d0
+	d1 = 3.0d0
+	d2 = d1*eps
 	DO i = -NX/2,NX/2
 		DO j = -NY/2,NY/2
-			vtrap(i,j) = 20.0d0*EXP(-0.1d0*((DBLE(i)*dspace))**2.0d0 - 0.01d0*((DBLE(j)*dspace))**2.0d0)
+			rx = DBLE(i-980)
+			ry = DBLE(j)
+			vtrap(i,j) = 100.0d0*EXP(-(1.0d0/d1**2.0d0)*((rx)*dspace)**2.0d0 - (1.0d0/d2**2.0d0)*(ry*dspace)**2.0d0)
 		END DO
 	END DO
 	ticks=ticks+1	
@@ -312,77 +173,43 @@ SUBROUTINE CALC_NORM
 	norm=norm*dspace*dspace
 END SUBROUTINE
 
-SUBROUTINE RHS (gridtemp, k)
+SUBROUTINE RHS (gt, kk)
 	use plane
-	use runparam
 	use timee
 	IMPLICIT NONE
-	INTEGER :: i,j
-	COMPLEX*16, DIMENSION(-NX/2:NX/2,-NY/2:NY/2) :: gridtemp, k
+	INTEGER :: i,j,k,BC
+	COMPLEX*16, DIMENSION(-NX/2:NX/2,-NY/2:NY/2) :: gt, kk
 	
-	k=0
-	
-	FORALL(i = ((-NX/2) + 1 ):((NX/2) - 1), j = ((-NY/2) + 1):((NY/2) - 1))
-		k(i,j) = 0.5*(4.0d0*gridtemp(i,j) - gridtemp(i,j+1)- gridtemp(i,j-1)- gridtemp(i+1,j)- gridtemp(i-1,j))/(dspace**2.0d0) &	
-			+ gridtemp(i,j)*gridtemp(i,j)*CONJG(gridtemp(i,j))&
-			- gridtemp(i,j) + vtrap(i,j)*gridtemp(i,j)&
-			+ tanh(time/100.0d0)*vob*eye*(gridtemp(i+1,j)-gridtemp(i-1,j))/(2.0d0*dspace)
-	END FORALL
-	
-	DO i = -NX/2+1, NX/2-1
-		k(i,NY/2) = 0.5*(4.0d0*gridtemp(i,NY/2) - gridtemp(i,-NY/2)- gridtemp(i,NY/2-1)&
-			- gridtemp(i+1,NY/2)- gridtemp(i-1,NY/2))/(dspace**2.0d0) &	
-			+ gridtemp(i,NY/2)*gridtemp(i,NY/2)*CONJG(gridtemp(i,NY/2))&
-			- gridtemp(i,NY/2) + vtrap(i,NY/2)*gridtemp(i,NY/2)&
-			+ tanh(time/100.0d0)*vob*eye*(gridtemp(i+1,NY/2)-gridtemp(i-1,NY/2))/(2.0d0*dspace)
-		k(i,-NY/2) = 0.5*(4.0d0*gridtemp(i,-NY/2) - gridtemp(i,-NY/2+1)- gridtemp(i,NY/2)&
-			- gridtemp(i+1,-NY/2)- gridtemp(i-1,-NY/2))/(dspace**2.0d0) &	
-			+ gridtemp(i,-NY/2)*gridtemp(i,-NY/2)*CONJG(gridtemp(i,-NY/2))&
-			- gridtemp(i,-NY/2) + vtrap(i,-NY/2)*gridtemp(i,-NY/2)&
-			+ tanh(time/100.0d0)*vob*eye*(gridtemp(i+1,-NY/2)-gridtemp(i-1,-NY/2))/(2.0d0*dspace)
-	END DO
-	
-	
-	DO j = -NY/2+1, NY/2-1
-		k(NX/2,j) = 0.5*(4.0d0*gridtemp(NX/2,j) - gridtemp(NX/2,j+1)- gridtemp(NX/2,j-1)&
-			- gridtemp(-NX/2,j)- gridtemp(NX/2-1,j))/(dspace**2.0d0) &	
-			+ gridtemp(NX/2,j)*gridtemp(NX/2,j)*CONJG(gridtemp(NX/2,j))&
-			- gridtemp(NX/2,j) + vtrap(NX/2,j)*gridtemp(NX/2,j)&
-			+ tanh(time/100.0d0)*vob*eye*(gridtemp(-NX/2,j)-gridtemp(NX/2-1,j))/(2.0d0*dspace)
-		k(-NX/2,j) = 0.5*(4.0d0*gridtemp(-NX/2,j) - gridtemp(-NX/2,j+1)- gridtemp(-NX/2,j-1)&
-			- gridtemp(-NX/2+1,j)- gridtemp(NX/2,j))/(dspace**2.0d0) &	
-			+ gridtemp(-NX/2,j)*gridtemp(-NX/2,j)*CONJG(gridtemp(-NX/2,j))&
-			- gridtemp(-NX/2,j) + vtrap(-NX/2,j)*gridtemp(-NX/2,j)&
-			+ tanh(time/100.0d0)*vob*eye*(gridtemp(-NX/2+1,j)-gridtemp(NX/2,j))/(2.0d0*dspace)
-	END DO
+	kk=0
 
-	k(NX/2,NY/2) = 0.5*(4.0d0*gridtemp(NX/2,NY/2) - gridtemp(NX/2,-NY/2)- gridtemp(NX/2,NY/2-1)&
-			- gridtemp(-NX/2,NY/2)- gridtemp(NX/2-1,NY/2))/(dspace**2.0d0) &	
-			+ gridtemp(NX/2,NY/2)*gridtemp(NX/2,NY/2)*CONJG(gridtemp(NX/2,NY/2))&
-			- gridtemp(NX/2,NY/2) + vtrap(NX/2,NY/2)*gridtemp(NX/2,NY/2)&
-			+ tanh(time/100.0d0)*vob*eye*(gridtemp(-NX/2,NY/2)-gridtemp(NX/2-1,NY/2))/(2.0d0*dspace)
-	k(NX/2,-NY/2) = 0.5*(4.0d0*gridtemp(NX/2,-NY/2) - gridtemp(NX/2,-NY/2+1)- gridtemp(NX/2,NY/2)&
-			-gridtemp(-NX/2,-NY/2)- gridtemp(NX/2-1,-NY/2))/(dspace**2.0d0) &	
-			+ gridtemp(NX/2,-NY/2)*gridtemp(NX/2,-NY/2)*CONJG(gridtemp(NX/2,-NY/2))&
-			- gridtemp(NX/2,-NY/2) + vtrap(NX/2,-NY/2)*gridtemp(NX/2,-NY/2)&
-			+ tanh(time/100.0d0)*vob*eye*(gridtemp(-NX/2,-NY/2)-gridtemp(NX/2-1,-NY/2))/(2.0d0*dspace)
-	k(-NX/2,NY/2) = 0.5*(4.0d0*gridtemp(-NX/2,NY/2) - gridtemp(-NX/2,-NY/2)- gridtemp(-NX/2,NY/2-1)&
-			- gridtemp(-NX/2+1,NY/2)- gridtemp(NX/2,NY/2))/(dspace**2.0d0) &	
-			+ gridtemp(-NX/2,NY/2)*gridtemp(-NX/2,NY/2)*CONJG(gridtemp(-NX/2,NY/2))&
-			- gridtemp(-NX/2,NY/2) + vtrap(-NX/2,NY/2)*gridtemp(-NX/2,NY/2)&
-			+ tanh(time/100.0d0)*vob*eye*(gridtemp(-NX/2+1,NY/2)-gridtemp(NX/2,NY/2))/(2.0d0*dspace)
-	k(-NX/2,-NY/2) = 0.5*(4.0d0*gridtemp(-NX/2,-NY/2) - gridtemp(-NX/2,-NY/2+1)- gridtemp(-NX/2,NY/2)&
-			- gridtemp(-NX/2+1,-NY/2)- gridtemp(NX/2,-NY/2))/(dspace**2.0d0)&
-			+ gridtemp(-NX/2,-NY/2)*gridtemp(-NX/2,-NY/2)*CONJG(gridtemp(-NX/2,-NY/2))&
-			- gridtemp(-NX/2,-NY/2) + vtrap(-NX/2,-NY/2)*gridtemp(-NX/2,-NY/2)&
-			+ tanh(time/100.0d0)*vob*eye*(gridtemp(-NX/2+1,-NY/2)-gridtemp(NX/2,-NY/2))/(2.0d0*dspace)
+	DO i = -NX/2,NX/2
+		DO j = -NY/2,NY/2
 			
-	if(itime.eq.1)then
-		k=k/(eye)
-	else
-		k=k/(eye-(1.0d0-tanh(time/100.0d0)))
-	end if
+			kk(i,j) = 0.5d0*(4.0d0*gt(BC(i,0),BC(j,1))- gt(BC(i,0),BC(j+1,1))- gt(BC(i,0),BC(j-1,1))-&
+					 gt(BC(i+1,0),BC(j,1))-gt(BC(i-1,0),BC(j,1)))/(dspace**2.0d0) + gt(i,j)*gt(i,j)*CONJG(gt(i,j))-&
+					 gt(i,j) + vtrap(i,j)*gt(i,j)+ tanh(time/100.0d0)*&
+					 vob*eye*(gt(BC(i+1,0),BC(j,1))-gt(BC(i-1,0),BC(j,1)))/(2.0d0*dspace)
+		END DO
+	END DO
+					
+	kk=kk/(eye)
+
 END SUBROUTINE
+
+INTEGER FUNCTION BC(s,n)
+	use plane
+	IMPLICIT NONE
+	INTEGER :: s,n
+	BC=s
+	SELECT CASE (n)
+    case (0)
+     if(s.eq.NX/2+1)BC=-NX/2
+     if(s.eq.-NX/2-1)BC=NX/2
+    case (1)
+     if(s.eq.NY/2+1)BC=-NY/2
+     if(s.eq.-NY/2-1)BC=NY/2
+	END SELECT
+END FUNCTION
 
 
 
@@ -583,7 +410,6 @@ use plane
 	ret = l2+l3-l4-l1
 END SUBROUTINE
 
-
 SUBROUTINE velxy(phase,velx,vely)
 use plane
 	IMPLICIT NONE
@@ -592,67 +418,32 @@ use plane
 	DOUBLE PRECISION :: temp1,temp2
 	velx = 0.0d0
 	vely = 0.0d0
-	DO i = -NX/2+2,NX/2-2
-	DO j = -NY/2+2,NY/2-2
-		if (phase(i-2,j)-phase(i-1,j)<-(pi/2.0d0)) then
-			temp1 = phase(i-2,j)-8.0d0*(phase(i-1,j) - PI)
-		else if (phase(i-2,j)-phase(i-1,j)>(pi/2.0d0)) then
-			temp1 = phase(i-2,j)-8.0d0*(phase(i-1,j) + PI)
+	DO i = -NX/2+1,NX/2-1
+	DO j = -NY/2+1,NY/2-1
+		if (phase(i+1,j)-phase(i-1,j)<-(pi/2.0d0)) then
+			temp1 = phase(i+1,j)-(phase(i-1,j) - PI)
+		else if (phase(i+1,j)-phase(i-1,j)>(pi/2.0d0)) then
+			temp1 = phase(i+1,j)-(phase(i-1,j) + PI)
 		else
-			temp1 = phase(i-2,j)-8.0d0*(phase(i-1,j))
+			temp1 = phase(i+1,j)-phase(i-1,j)
 		end if
-		
-		if (phase(i-2,j)-phase(i+1,j)<-(pi/2.0d0)) then
-			temp1 =  temp1 + 8.0d0*(phase(i+1,j) - PI)
-		else if (phase(i-2,j)-phase(i+1,j)>(pi/2.0d0)) then
-			temp1 =  temp1 + 8.0d0*(phase(i+1,j) + PI)
-		else
-			temp1 =  temp1 + 8.0d0*phase(i+1,j)
-		end if
-		
-		if (phase(i-2,j)-phase(i+2,j)<-(pi/2.0d0)) then
-			temp1 =  temp1 - (phase(i+2,j) - PI)
-		else if (phase(i-2,j)-phase(i+2,j)>(pi/2.0d0)) then
-			temp1 =  temp1 - (phase(i+2,j) + PI)
-		else
-			temp1 =  temp1 - phase(i+2,j)
-		end if
-		
-		velx(i,j) = temp1/(12.0d0*dspace)
+		velx(i,j) = temp1
 	END DO
 	END DO
 	
-	DO i = -NX/2+2,NX/2-2
-	DO j = -NY/2+2,NY/2-2
-		if (phase(i,j-2)-phase(i,j-1)<-(pi/2.0d0)) then
-			temp1 = (phase(i,j-2)-8.0d0*(phase(i,j-1) - PI))
-		else if (phase(i,j-2)-phase(i,j-1)>(pi/2.0d0)) then
-			temp1 = (phase(i,j-2)-8.0d0*(phase(i,j-1) + PI))
+	DO i = -NX/2+1,NX/2-1
+	DO j = -NY/2+1,NY/2-1
+		if (phase(i,j+1)-phase(i,j-1)<-(pi/2.0d0)) then
+			temp1 = phase(i,j+1)-(phase(i,j-1) - PI)
+		else if (phase(i,j+1)-phase(i,j-1)>(pi/2.0d0)) then
+			temp1 = phase(i,j+1)-(phase(i,j-1) + PI)
 		else
-			temp1 = (phase(i,j-2)-8.0d0*(phase(i,j-1)))
+			temp1 = phase(i,j+1)-phase(i,j-1)
 		end if
-		
-		if (phase(i,j-2)-phase(i,j+1)<-(pi/2.0d0)) then
-			temp1 =  temp1 + 8.0d0*(phase(i,j+1) - PI)
-		else if (phase(i,j-2)-phase(i,j+1)>(pi/2.0d0)) then
-			temp1 =  temp1 + 8.0d0*(phase(i,j+1) + PI)
-		else
-			temp1 =  temp1 + 8.0d0*phase(i,j+1)
-		end if
-		
-		if (phase(i,j-2)-phase(i,j+2)<-(pi/2.0d0)) then
-			temp1 =  temp1 - (phase(i,j+2) - PI)
-		else if (phase(i,j-2)-phase(i,j+2)>(pi/2.0d0)) then
-			temp1 =  temp1 - (phase(i,j+2) + PI)
-		else
-			temp1 =  temp1 - phase(i,j+2)
-		end if
-		
-		vely(i,j) = temp1/(12.0d0*dspace)
+		vely(i,j) = temp1
 	END DO
 	END DO
 END SUBROUTINE
-
 
 SUBROUTINE COUNTVORTICES(vort,np,nn)
         use runparam
@@ -685,7 +476,7 @@ SUBROUTINE COUNTVORTICES(vort,np,nn)
 				+ vtrap(i,j)*uu*conjg(uu)
 				psi = DBLE(grid(i,j)*CONJG(grid(i,j)))
 			
-                if (DBLE(vtrap(i,j))<0.1d0 .and. DBLE(psi)<0.4d0 .and. SQRT((velx(i,j)**2.0d0)+(vely(i,j)**2.0d0))>4.0d0) then
+                if (DBLE(vtrap(i,j))<0.1d0 .and. DBLE(psi)<0.2d0 .and. SQRT((velx(i,j)**2.0d0)+(vely(i,j)**2.0d0))>1.2d0) then
                         !WRITE (unit=6,fmt="(a,i4,i4)") "FOUND ONE AT ", i, j
                         if(vlength > 0) then
                                 DO k = 0, vlength-1
@@ -756,17 +547,18 @@ SUBROUTINE GETVORTICES(vort,vortarray)
 				+ vtrap(i,j)*uu*conjg(uu)
 				psi = DBLE(grid(i,j)*CONJG(grid(i,j)))
 			
-                if (DBLE(vtrap(i,j))<0.1d0 .and. DBLE(psi)<0.4d0 .and. SQRT((velx(i,j)**2.0d0)+(vely(i,j)**2.0d0))>4.0d0) then
-                        !WRITE (unit=6,fmt="(a,i4,i4)") "FOUND ONE AT ", i, j
+                if (DBLE(vtrap(i,j))<1.0d0 .and. DBLE(psi)<0.2d0 .and. SQRT((velx(i,j)**2.0d0)+(vely(i,j)**2.0d0))>1.2d0) then
+                        !FOUND ONE AT i, j
                         if(vlength > 0) then
                                 DO k = 0, vlength-1
                                         temp = SQRT((DBLE(i-vtrack(k,0))**2.0d0) + (DBLE(j-vtrack(k,1))**2.0d0))
-                                        !WRITE (unit=6,fmt="(a,i4,i4,a,f10.7)") "ITS DISTANCE FROM EXISTSING POINT ", vtrack(k,0),vtrack(k,1), " IS ", temp
+                                        !ITS DISTANCE FROM EXISTSING POINT k IS temp
                                         if(temp < 6.0d0) then
-                                        !WRITE (unit=6,fmt="(a,i4,i4,a,2i4)")&
-                                        	!"AVERAGING", vtrack(k,0),vtrack(k,1), " AND ", i,j
+                                        !AVERAGING vtrack(k,0),vtrack(k,1) and i,j
+                                  		!WRITE (unit=6,fmt="(a, 2f10.2, a , 2i5)") "Averaging ", vtrack(k,0),vtrack(k,1), " and ", i,j
                                         	vtrack(k,0) = (vtrack(k,0)+DBLE(i))/2.0d0
                                     	    vtrack(k,1) = (vtrack(k,1)+DBLE(j))/2.0d0
+                                    	!WRITE (unit=6,fmt="(a, 2f10.2)") "We get ", vtrack(k,0),vtrack(k,1)
                                     	end if
                                         if(temp < dist) then
                                         dist = temp
