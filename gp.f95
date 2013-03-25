@@ -63,11 +63,11 @@ subroutine dump_density (II)
 	use params
 	
 	implicit none
-	doUBLE PRECISION :: small
+	double precision :: small
 	integer :: II,i,j,vort=0
 	character(len=80) fname
 	complex*16 :: u,uux,uuy,uu,cuux,cuuy
-	doUBLE PRECISION, dimension(-NX/2:NX/2,-NY/2:NY/2) :: phase,velx,vely
+	double precision, dimension(-NX/2:NX/2,-NY/2:NY/2) :: phase,velx,vely
 	FORALL(i = -NX/2:NX/2, j = -NY/2:NY/2)
 	phase(i,j) = ATAN(AIMAG(GRID(i,j))/dble(GRID(i,j)+TINY(0.0d0)))
 	end FORALL
@@ -90,12 +90,12 @@ subroutine dump_vortex_locations (II)
 	use params
 	
 	implicit none
-	doUBLE PRECISION :: ret
+	double precision :: ret
 	integer :: II,ti,tj,i,j,k,vort
 	character(len=80) fname
 	complex*16 :: u,uux,uuy,uu,cuux,cuuy
-	doUBLE PRECISION, dimension(-NX/2:NX/2,-NY/2:NY/2) :: vorticity
-	doUBLE PRECISION, dimension(0:NX*NY,0:2) :: vortarray
+	double precision, dimension(-NX/2:NX/2,-NY/2:NY/2) :: vorticity
+	double precision, dimension(0:NX*NY,0:2) :: vortarray
 	vort=0
 	vortarray=0.0d0
 	vorticity=0.0d0
@@ -118,8 +118,8 @@ subroutine LINEINTVF(fieldx,fieldy,x,ex,y,ey,ret)
 use params
 	implicit none
 	integer :: t,x,ex,y,ey
-	doUBLE PRECISION, dimension(-NX/2:NX/2,-NY/2:NY/2) :: fieldx,fieldy
-	doUBLE PRECISION l1,l2,l3,l4,ret
+	double precision, dimension(-NX/2:NX/2,-NY/2:NY/2) :: fieldx,fieldy
+	double precision l1,l2,l3,l4,ret
 	l1=0.0d0
 	l2=0.0d0
 	l3=0.0d0
@@ -143,8 +143,8 @@ subroutine velxy(phase,velx,vely)
 use params
 	implicit none
 	integer :: i,j
-	doUBLE PRECISION, dimension(-NX/2:NX/2,-NY/2:NY/2) :: phase,velx,vely
-	doUBLE PRECISION :: temp1,temp2
+	double precision, dimension(-NX/2:NX/2,-NY/2:NY/2) :: phase,velx,vely
+	double precision :: temp1,temp2
 	velx = 0.0d0
 	vely = 0.0d0
 	do i = -NX/2+1,NX/2-1
@@ -179,11 +179,11 @@ subroutine GETVORTICES(vort,vortarray)
         
         implicit none
         integer :: i,j,k,vort,dvort,vlength,np,nn
-        doUBLE PRECISION, dimension(-NX/2:NX/2,-NY/2:NY/2) :: vela
+        double precision, dimension(-NX/2:NX/2,-NY/2:NY/2) :: vela
         complex*16 :: uux,uuy,uu,eng
-        doUBLE PRECISION :: dist,temp,psi,ret
-        doUBLE PRECISION, dimension(0:NX*NY,0:2) :: vtrack,vortarray
-        doUBLE PRECISION, dimension(-NX/2:NX/2,-NY/2:NY/2) :: phase,velx,vely
+        double precision :: dist,temp,psi,ret
+        double precision, dimension(0:NX*NY,0:2) :: vtrack,vortarray
+        double precision, dimension(-NX/2:NX/2,-NY/2:NY/2) :: phase,velx,vely
         vtrack = 0.0d0
         vlength = 0
         np=0
