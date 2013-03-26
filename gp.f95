@@ -113,9 +113,9 @@ subroutine dump_vortex_locations (II)
 	open (7, FILE = fname)
 	do k=0,vort-1
 		if(vortarray(k,2) > 0) then
-			write (unit=7,fmt="(f10.2,f10.2,i5)") vortarray(k,0),vortarray(k,1),0
+			write (unit=7,fmt="(f10.2,f10.2,i5)") vortarray(k,0)*DSPACE,vortarray(k,1)*DSPACE,0
 		else
-			write (unit=7,fmt="(f10.2,f10.2,i5)"),vortarray(k,0),vortarray(k,1),1
+			write (unit=7,fmt="(f10.2,f10.2,i5)"),vortarray(k,0)*DSPACE,vortarray(k,1)*DSPACE,1
 		end if
 	end do
 	close(7)
