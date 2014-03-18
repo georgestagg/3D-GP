@@ -5,6 +5,8 @@
 #Take care of any params.in changes
 if [ -a params.in ]; then
 	cp params.in $GP2DSOURCELOC
+else
+	cp $GP2DSOURCELOC/params.in.dist $GP2DSOURCELOC/params.in
 fi
 #Change to code dir
 origdir=${PWD}

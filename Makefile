@@ -24,7 +24,7 @@ gp: params.o utils.o rhs.o potential.o vortex.o
 .PHONY: clean veryclean
 
 clean:
-	rm -f *.o *.mod *.MOD
+	rm -f *.o *.mod *.MOD *.in
 
 veryclean: clean
 	rm -f *~ $(PROGRAMS)
