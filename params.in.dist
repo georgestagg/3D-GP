@@ -25,14 +25,14 @@ integer :: VOBS = 35, VOBE = 35, VOBST = 1
 
 !Potential types - 0 object - 1 free rotational obj - 2 oscillating obj - 3 afm-img
 logical :: enablePot = .true.
-integer :: potType = 2
+integer :: potType = 0
 
 
 !Object properties
 double precision :: RRX=1.0d0
 double precision :: RRY=2.0d0
-double precision :: OBJXDASH=5.0d0
-double precision :: OBJYDASH=5.0d0
+double precision :: OBJXDASH=0.0d0
+double precision :: OBJYDASH=0.0d0
 !Rotating obj
 double precision :: OBJANGLE=0.1d0
 double precision :: OBJANGLEV=0.1d0
