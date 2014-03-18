@@ -1,6 +1,8 @@
-#!/usr/bin/env bash
-echo "running gnuplot
-"
+#!/bin/bash
+# Compile and set up the code ready to run in a separate directory
+# usage:  ./makemovie.sh <velocity> <type> <cbrange> 
+
+echo "running gnuplot"
 for count in {0001..1500};
 do
 if [ "$2" = "density" ]; then
@@ -64,19 +66,8 @@ composite $count.v.png $count.d.png $count.f.png
 fi
 done
 
-echo "creating movie $2.avi
-"
-if [ "$2" = "density" ]; then
-mencoder "mf://*.png" -mf fps=30 -ovc lavc -lavcopts vcodec=msmpeg4v2:vbitrate=20971520 -o density.avi 
-fi
-if [ "$2" = "phase" ]; then
-mencoder "mf://*.png" -mf fps=30 -ovc xvid -ovc lavc  -o phase.avi
-fi
-if [ "$2" = "vort" ]; then
-mencoder "mf://*.png" -mf fps=30 -ovc lavc -lavcopts vcodec=msmpeg4v2:vbitrate=20971520 -o vort.avi 
-fi
-if [ "$2" = "densvort" ]; then
-mencoder "mf://*.f.png" -mf fps=30 -ovc lavc -lavcopts vcodec=msmpeg4v2:vbitrate=20971520 -o densvort.avi 
-fi
+echo "creating movie $2.avi"
+mencoder "mf://*.png" -mf fps=30 -ovc lavc -lavcopts vcodec=msmpeg4v2:vbitrate=20971520 -o $2.avi 
+
 rm -Rf *.jpg *.png
 
