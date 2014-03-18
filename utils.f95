@@ -8,7 +8,7 @@ subroutine add_noise
 	call srand(seed)
 	do i = -NX/2, NX/2
 	do j = -NY/2, NY/2
-		GRID(i,j) = GRID(i,j) + CMPLX((RAND()/1000.0d0)-(1.0d0/2000.0d0),(RAND()/1000.0d0)-(1.0d0/2000.0d0))	
+		GRID(i,j) = GRID(i,j) + CMPLX((RAND()*noiseamp)-(noiseamp/2.0d0),(RAND()*noiseamp)-(noiseamp/2.0d0))	
 	end do
 	end do
 end subroutine
@@ -80,6 +80,76 @@ subroutine calc_force(force)
 	FVECOLD(2) = fvec(2)
 
 end subroutine
+
+subroutine calc_force_2D(force2d)
+  use params
+
+  implicit none
+  integer :: i,j
+  COMPLEX*16 :: uu,uux,uuy
+  double precision, dimension(2,-NX/2:NX/2,-NY/2:NY/2) :: force2d
+  do i = -NX/2+1, NX/2-1
+      do j = -NY/2+1, NY/2-1
+          uu=GRID(i,j)*CONJG(GRID(i,j))
+          uux=(OBJPOT(i+1,j)-OBJPOT(i-1,j))/(2.0d0*DSPACE)
+          uuy=(OBJPOT(i,j+1)-OBJPOT(i,j-1))/(2.0d0*DSPACE)
+  		  force2d(1,i,j) = uu*uux
+		  force2d(2,i,j) = uu*uuy
+      end do
+  end do
+end subroutine
+
+subroutine cross_2d(a, b,ret)
+	implicit none 
+	double precision :: ret
+    double precision, dimension(2) :: a,b
+    ret = a(1)*b(2) - a(2)*b(1)
+END subroutine
+
+subroutine calc_net_torque(torque)
+	use params
+	implicit none
+	integer :: i,j
+	double precision, dimension(2,-NX/2:NX/2,-NY/2:NY/2) :: force2d
+	double precision, dimension(2) :: r_rel
+	double precision :: torque,crossp
+	
+	torque = 0.0d0
+	call calc_force_2D(force2d)
+	do i = -NX/2+1, NX/2-1
+		do j = -NY/2+1, NY/2-1
+			r_rel(1) = (dble(i)*DSPACE)-OBJXDASH
+			r_rel(2) = (dble(j)*DSPACE)-OBJYDASH
+			call cross_2d(r_rel,force2d(:,i,j),crossp)			
+		    torque = torque + crossp	
+		end do
+	end do
+end subroutine
+
+subroutine calc_new_obj_angle
+    use params
+	implicit none
+	double precision :: nettorque
+	call calc_net_torque(nettorque)
+	OBJANGLEV = OBJANGLEV + MOMINERTIA*(nettorque*DT)
+	OBJANGLE  = OBJANGLE  + (OBJANGLEV*DT) 
+end subroutine
+
+subroutine calc_OBJNEWTON
+	use params
+	implicit none
+	double precision :: beta = 2.5d0, forced, mass
+	double precision, dimension(2,-NX/2:NX/2,-NY/2:NY/2) :: force2d
+	
+	call calc_force_2D(force2d)
+	mass = beta/(w0**2.0d0)
+
+	forced = FVAL*SIN(DBLE(TIME)*WF)
+	OBJXVEL = OBJXVEL + ((sum(force2d(1,:,:))*DSPACE*DSPACE - beta*OBJXDASH + forced)/mass)*DBLE(DT)
+	OBJXDASH = OBJXDASH + OBJXVEL*DBLE(DT)
+	CALL calc_OBJPOT_osc
+end subroutine
+
 
 subroutine calc_energy(energy)
 	use params

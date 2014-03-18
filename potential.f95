@@ -1,33 +1,103 @@
-subroutine calc_OBJPOT (obj)				
+subroutine calc_OBJPOT 				
+	use params
+	implicit none
+	if (enablePot) then
+		if(potType .eq. 0) then
+			call calc_OBJPOT_obj
+		end if	
+		if(potType .eq. 1) then
+			call calc_OBJPOT_rot
+		end if
+		if(potType .eq. 2) then
+			call calc_OBJPOT_osc
+		end if
+		if(potType .eq. 3) then
+			call calc_OBJPOT_afm
+		end if		
+	end if
+end subroutine
+
+subroutine calc_OBJPOT_osc		
+	use params
+	implicit none
+	integer :: i,j,obj
+	double precision :: rx,ry,r2
+	do i = -NX/2,NX/2
+		do j = -NY/2,NY/2
+			rx = (dble(i)*DSPACE)-OBJXDASH
+			ry = (dble(j)*DSPACE)-OBJYDASH
+			OBJPOT(i,j) = 50.0d0*EXP(-(1.0d0/RRX**2.0d0)*(rx**2.0d0) - (1.0d0/RRY**2.0d0)*(ry**2.0d0))
+		end do
+	end do
+end subroutine
+
+subroutine calc_OBJPOT_rot              
+   use params
+   implicit none 
+   integer :: i,j,obj 
+   double precision :: rx,ry,r2,rtheta
+   double precision, dimension(2,2) :: rotmat
+   double precision, dimension(2) :: point,rotpoint
+   call calc_new_obj_angle
+   rtheta = OBJANGLE
+   rotmat(1,1) = cos(rtheta)
+   rotmat(2,1) = -sin(rtheta)
+   rotmat(1,2) = sin(rtheta)
+   rotmat(2,2) = cos(rtheta)
+
+   do i = -NX/2,NX/2 
+       do j = -NY/2,NY/2 
+			 point(1) = dble(i)*DSPACE
+             point(2) = dble(j)*DSPACE
+			 rotpoint = matmul(rotmat,point)
+           OBJPOT(i,j) = 50.0d0*EXP( -(1.0d0/RRX**2.0d0)*(rotpoint(1)-OBJXDASH)**2.0d0 &
+									 -(1.0d0/RRY**2.0d0)*(rotpoint(2)-OBJYDASH)**2.0d0 ) 
+       end do 
+   end do 
+end subroutine 
+
+
+subroutine calc_OBJPOT_obj		
+	use params
+	implicit none
+	integer :: i,j,obj
+	double precision :: rx,ry,r2
+	do i = -NX/2,NX/2
+		do j = -NY/2,NY/2
+			rx = (dble(i)*DSPACE)-OBJXDASH
+			ry = (dble(j)*DSPACE)-OBJYDASH
+			OBJPOT(i,j) = 50.0d0*EXP(-(1.0d0/RRX**2.0d0)*(rx**2.0d0) - (1.0d0/RRY**2.0d0)*(ry**2.0d0))
+		end do
+	end do
+end subroutine
+
+subroutine calc_OBJPOT_afm 				
 	use params
 	implicit none
 	integer :: i,j,obj,slicei,slicej
-	double precision :: di,dj,xi1,ity,xtt,ytt,ztt
-	double precision, dimension(1:256) :: xdat,ydat
-	double precision, dimension(256,256) :: ydatb
-	open (unit = 5, file = "../profile1-1um.dat")
+	double precision :: di,dj,ity,xtt,ytt,ztt
+	double precision, dimension(afmRES) :: xdat,ydat
+	double precision, dimension(afmRES,afmRES) :: ydatb
+	open (unit = 5, file = afm_filename)
 	
-	xi1 = 0.066d0 !nanometres
-	
-	do j = 1,256
-	do i = 1,256
+	do j = 1,afmRES
+	do i = 1,afmRES
 		read (5,*) xtt,ytt,ztt
-			xdat(i) = ((xtt-0.5d0)*35.0d0)/xi1
-			ydatb(i,j) = (ztt/xi1)   !level y so that data=0 -> -DSPACE*NY/2
+			xdat(i) = ((xtt-0.5d0)*1000.0d0*afmXScale)/xi1
+			ydatb(i,j) = (ztt/xi1)
 	end do
 	end do
-	!ydat = ydatb(slicei,slicej)
-	ydat = ydatb(120,:)
-	ydat= ydat - MINVAL(ydat(3:253)) - (NY/2)*DSPACE
-	!write(6,*) ydat
+	ydat = ydatb(afmSlice,:)
+	ydat = ydat - MINVAL(ydat(3:afmRES-3)) - (NY/2)*DSPACE
+	ydat = ydat*afmYscale
 	OBJPOT = 0.0d0
 	
 	do j = -NY/2,NY/2
 		dj = j*DSPACE
 		do i = -NX/2,NX/2
 			di = i*DSPACE
-			if(di>maxval(xdat(1:252))) then
-				di = xdat(252)
+			if(di>maxval(xdat(1:afmRES-3))) then
+				di = xdat(afmRES-3)
 			end if
 			CALL interp(di,xdat,ydat,ity)
 			if(dj < ity) then			
@@ -40,13 +110,14 @@ end subroutine
 
 
 subroutine interp(xloc,xdat,ydat,rety)
+	use params
 	implicit none
 	integer :: i,si
 	double precision :: xloc,rety,low,high,diff,alpha
-	double precision, dimension(1:255) :: xdat,ydat
+	double precision, dimension(afmRES) :: xdat,ydat
 	
 	si = 1
-	do i = 1,255
+	do i = 1,afmRES-1
 		if(xdat(i)>xloc) then
 			si = i
 			exit

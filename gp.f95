@@ -11,14 +11,14 @@ program gp
 			TIME = 0.0d0
 			VOB = DBLE(LOOPNO)/100.0d0
 			DT = (0,-0.01d0)
-			call calc_OBJPOT(1)
+			call calc_OBJPOT
 			call approx
 			write(fname, '(a,i0)') 'utils.',LOOPNO
 			open (8, FILE = fname)
 			!!!!!!!!!!!!
 			call runit(2000,0,0)
 			DT = (0.01d0,0)
-			!call add_noise
+			call add_noise
 			call runit(NSTEPS,1,1)
 			close(8)
 	end do
@@ -31,6 +31,9 @@ subroutine runit(steps,rt,plot)
 	do i = 1, steps
 		call iterate(rt)
 		TIME = TIME + dble(DT)
+		if(potType .eq. 2) then
+			call calc_OBJPOT_osc
+		end if
 		if (modulo(i,10) == 0) then
 			if (plot == 1) then
 				call calc_misc
@@ -44,19 +47,29 @@ subroutine runit(steps,rt,plot)
 					write (unit=10,fmt="(a,i3,a,f6.2,a)") "Smoothing Steady Soln: ",LOOPNO, ":     " ,(dble(i)/dble(steps))*100.0d0,"%"
 			end if
 			close(10)
+		end if
+		if (modulo(i,dumpv*100) == 0) then
 			if (rt == 1) then
 				if (plot == 1) then	
-				call dump_vortex_locations (i)
-				call dump_density(i)
+					call dump_vortex_locations (i)
 				end if	
 			end if
 		end if
-		if (modulo(i,100) == 0) then
-			if (plot == 1) then
-				!call dump_density(i)
-				!call dump_wavefunction(i)
+		if (modulo(i,dumpd*100) == 0) then
+			if (rt == 1) then
+				if (plot == 1) then	
+					call dump_density(i)
+				end if	
 			end if
-		end if
+		end if		
+		if (modulo(i,dumpwf*100) == 0) then
+			if (rt == 1) then
+				if (plot == 1) then	
+					call dump_wavefunction(i)
+				end if	
+			end if
+		end if		
+		
 	end do
 end subroutine
 
@@ -88,7 +101,7 @@ subroutine dump_wavefunction (II)
 	implicit none
 	integer :: II,i,j
 	character(len=80) fname
-	write(fname, '(i0,a,i0.4)') LOOPNO,'plot.',II/100
+	write(fname, '(i0,a,i0.4)') LOOPNO,'plotwf.',II/100
 	open (7, FILE = fname)
 	do i = -NX/2, NX/2
 		do j = -NY/2, NY/2
