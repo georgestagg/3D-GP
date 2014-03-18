@@ -47,12 +47,13 @@ subroutine runit(steps,rt,plot)
 			if (rt == 1) then
 				if (plot == 1) then	
 				call dump_vortex_locations (i)
+				call dump_density(i)
 				end if	
 			end if
 		end if
 		if (modulo(i,100) == 0) then
 			if (plot == 1) then
-				call dump_density(i)
+				!call dump_density(i)
 				!call dump_wavefunction(i)
 			end if
 		end if

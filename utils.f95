@@ -8,7 +8,7 @@ subroutine add_noise
 	call srand(seed)
 	do i = -NX/2, NX/2
 	do j = -NY/2, NY/2
-		GRID(i,j) = GRID(i,j) + CMPLX((RAND()/100.0d0)-(1.0d0/200.0d0),(RAND()/100.0d0)-(1.0d0/200.0d0))	
+		GRID(i,j) = GRID(i,j) + CMPLX((RAND()/1000.0d0)-(1.0d0/2000.0d0),(RAND()/1000.0d0)-(1.0d0/2000.0d0))	
 	end do
 	end do
 end subroutine
