@@ -1,16 +1,37 @@
 #!/bin/bash
 # Compile and set up the code ready to run in a separate directory
-# usage:  ./makemovie.sh <velocity> <type> <cbrange> 
+# usage:  ./makemovie.sh <velocity> <type> <cbrange> <xrange> <yrange>
+
+nx=`grep -F "NX" < params.in | grep -o "[0-9]*"`
+ny=`grep -F "NY" < params.in | grep -o "[0-9]*"`
+nofiles=`ls $1plot.* |tac| grep -o -m 1 "\.[0-9]*" | grep -o "[0-9]*"`
+scaledy=`echo "2048*($ny/$nx)" | bc -l | awk '{printf("%d\n",$1 + 0.5)}'`
+scaledyvort=`echo "1577*($ny/$nx)" | bc -l | awk '{printf("%d\n",$1 + 0.5)}'`
+dspace=`grep -F "DSPACE" < params.in | grep -o "=.*$" | grep -o "[0-9.-]*" | xargs |awk '{printf("%f\n",$1*(10**$2))}'`
+
+if [ -z "$4" ]; then
+	xrange=`echo "$nx*$dspace" | bc -l`
+else
+	xrange=$4
+fi
+
+if [ -z "$5" ]; then
+	yrange=`echo "$ny*$dspace" | bc -l`
+else
+	yrange=$5
+fi
 
 echo "running gnuplot"
-for count in {0001..1500};
+for count in $(eval echo "{0001..$nofiles}")
 do
 if [ "$2" = "density" ]; then
 echo "
 set pm3d map
 set title ''
-set terminal png enhanced size 2048,1024 crop;
+set terminal png enhanced size 2048,$scaledy crop;
 set cbrange [0:$3]
+set xrange[-$xrange:$xrange]
+set yrange[-$yrange:$yrange]
 set output '$count.png';
 splot '$1plot.$count' using 1:2:3" | gnuplot;
 fi
@@ -19,9 +40,9 @@ if [ "$2" = "phase" ]; then
 echo "
 set pm3d map
 set title ''
-set terminal png enhanced size 1000,1000  crop;
-set xrange[-20:20]
-set yrange[-20:20]
+set terminal png enhanced size 2048,$scaledy  crop;
+set xrange[-$xrange:$xrange]
+set yrange[-$yrange:$yrange]
 set cbrange [-1.57:1.57];
 set output '$count.png';
 splot '$1plot.$count' using 1:2:4" | gnuplot;
@@ -30,22 +51,22 @@ if [ "$2" = "vort" ]; then
 echo "
 set title '';
 unset key;
-set terminal png enhanced size 1600,480 crop;
-set xrange[0:420]
-set yrange[-60:60]
-set output '$count.png';
-set object 1 ellipse center 393,0 size 4.2*2.4,4.2*4.8 angle 0. front fillstyle solid 1.0 fc rgb 'black'
-set style line 9 linecolor rgb 'blue' pt 6 ps 1
-set style line 7 linecolor rgb 'red' pt 7 ps 1
-plot '$1plotvort.$count' u (\$3==0?-1000:\$1):(\$3==0?-1000:\$2) ps 1 pt 7 lc 3,'$1plotvort.$count' u (\$3==1?-1000:\$1):(\$3==1?-1000:\$2) ps 1 pt 9 lc 1" | gnuplot;
+set terminal png enhanced size 1577,$scaledyvort crop;
+set xrange[-$xrange:$xrange]
+set yrange[-$yrange:$yrange]
+unset colorbox
+set output '$count.v.png';
+set style line 9 linecolor rgb 'blue' pt 6 ps 2
+set style line 7 linecolor rgb 'green' pt 7 ps 2
+plot '$1plotvort.$count' u (\$3==0?-1000:\$1):(\$3==0?-1000:\$2) ps 2 pt 7 lc 3,'$1plotvort.$count' u (\$3==1?-1000:\$1):(\$3==1?-1000:\$2) ps 2 pt 9 lc 1" | gnuplot;
 fi
 if [ "$2" = "densvort" ]; then
 echo "
 set pm3d map
 set title ''
-set terminal png enhanced size 2048,1024 crop;
-set xrange[-200:200]
-set yrange[-120:120]
+set terminal png enhanced size 2048,$scaledy crop;
+set xrange[-$xrange:$xrange]
+set yrange[-$yrange:$yrange]
 set cbrange [0:$3]
 unset colorbox
 set output '$count.d.png';
@@ -53,9 +74,9 @@ splot '$1plot.$count' using 1:2:3" | gnuplot;
 echo "
 set title '';
 unset key;
-set terminal png enhanced size 1577,748 crop;
-set xrange[-200:200]
-set yrange[-120:120]
+set terminal png enhanced size 1577,$scaledyvort crop;
+set xrange[-$xrange:$xrange]
+set yrange[-$yrange:$yrange]
 unset colorbox
 set output '$count.v.png';
 set style line 9 linecolor rgb 'blue' pt 6 ps 2
