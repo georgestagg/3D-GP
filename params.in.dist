@@ -1,0 +1,50 @@
+! vim: set filetype=fortran:
+!----------------------------------------------------------------------------
+! This file includes parameters which, if changed, will require the code to be
+! recompiled.  It is included verbatim in params.f95.
+!----------------------------------------------------------------------------
+
+!AFM-IMAGE
+character(len=*),parameter :: afm_filename = "/data/a8034837/afm-surface/profile1-1um.dat"
+integer,parameter :: afmRES = 256
+integer :: afmSlice = 120
+double precision :: xi1 = 0.066d0
+double precision :: afmXScale=0.035d0
+double precision :: afmYscale=1.0d0
+
+!Iterations to run
+integer :: NSTEPS=300000
+
+!Resolution
+integer,parameter :: NX = 1024
+integer,parameter :: NY = 512
+double precision :: DSPACE = 0.4d0
+
+!Flow Speed in X Dir
+integer :: VOBS = 35, VOBE = 35, VOBST = 1
+
+!Potential types - 0 object - 1 free rotational obj - 2 oscillating obj - 3 afm-img
+logical :: enablePot = .true.
+integer :: potType = 2
+
+
+!Object properties
+double precision :: RRX=1.0d0
+double precision :: RRY=2.0d0
+double precision :: OBJXDASH=5.0d0
+double precision :: OBJYDASH=5.0d0
+!Rotating obj
+double precision :: OBJANGLE=0.1d0
+double precision :: OBJANGLEV=0.1d0
+double precision :: MOMINERTIA=0.000001d0
+!Oscillating Obj
+double precision :: FVAL = 0.0d0, WF = 0.0d0,W0 = 0.05d0 !force amp,force feq, nat freq
+
+!Dump frequency
+integer :: dumpv = 1, dumpd = 1, dumpwf = 10000
+
+!Noise Amplitude - 0.001d0 works well
+integer :: noiseamp = 0.000d0
+
+
+
