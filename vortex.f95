@@ -1,8 +1,8 @@
 subroutine get_vortices(vort,vortarray)
         use params    
         implicit none
-        integer :: i,j,k,vort,vlength,avgd
-        double precision :: temp,dist,ret,psi
+        integer :: i,j,k,vort,vlength,avgd,ilineintsize
+        double precision :: temp,dist,ret,psi,intervort,vortcorev,densmax,objpotcutoff
         double precision, dimension(0:NX*NY,0:2) :: vtrack,vortarray
         double precision, dimension(-NX/2:NX/2,-NY/2:NY/2) :: phase,velx,vely
 
@@ -10,7 +10,23 @@ subroutine get_vortices(vort,vortarray)
         vortarray = 0
         vtrack = 0.0d0
         vlength = 0
-
+        
+        !vortex detecting heuristics
+        if(RHSType .eq. 0) then
+        	intervort = 6.0d0
+        	vortcorev = 1.2d0
+        	ilineintsize = NINT(intervort)
+        	densmax = 0.5d0
+        	objpotcutoff = 5.0d0
+        end if
+        if(RHSType .eq. 1) then
+        	intervort = (0.3d0/DSPACE)
+        	vortcorev = 1.0d0
+        	ilineintsize = NINT(intervort)
+        	densmax = 0.004d0
+        	objpotcutoff = 50.0d0
+        end if       
+        !!!!!!!!!!!!!!!!!!!!!!!!!!!
         call calc_phase(phase)
        	call velxy(phase,velx,vely)
        	DO i = -NX/2+10, NX/2-10
@@ -18,14 +34,16 @@ subroutine get_vortices(vort,vortarray)
                 dist = 99999999.0d0
 				psi = DBLE(grid(i,j)*CONJG(grid(i,j)))
 			
-                if (DBLE(OBJPOT(i,j))<1.0d0 .and. DBLE(psi)<0.2d0 .and. SQRT((velx(i,j)**2.0d0)+(vely(i,j)**2.0d0))>1.2d0) then
+                if (DBLE(OBJPOT(i,j))<objpotcutoff .and. DBLE(psi)<(0.2d0*densmax)&
+                		.and. SQRT((velx(i,j)**2.0d0)+(vely(i,j)**2.0d0))>vortcorev) then
                         !FOUND ONE AT i, j
+                        WRITE (unit=6,fmt="(a,i0,a,i0)") "Found one at ", i,"  ",j
                         if(vlength > 0) then
                                 DO k = 0, vlength-1
                                         temp = SQRT((DBLE(i-vtrack(k,0))**2.0d0) + (DBLE(j-vtrack(k,1))**2.0d0))
                                         !ITS DISTANCE FROM EXISTSING POINT k IS temp
-                                        CALL LINEINTVF(velx,vely,i-5,i+5,j-5,j+5,ret)
-                                        if(temp < 6.0d0 .and. sign(1.0d0,ret) .eq. sign(1.0d0,vtrack(k,2))) then
+                                        CALL LINEINTVF(velx,vely,i-ilineintsize,i+ilineintsize,j-ilineintsize,j+ilineintsize,ret)
+                                        if(temp < intervort .and. sign(1.0d0,ret) .eq. sign(1.0d0,vtrack(k,2))) then
                                         	!AVERAGING vtrack(k,0),vtrack(k,1) and i,j
                                   			!WRITE (unit=6,fmt="(a, 2f10.2, a , 2i5)") "Averaging ", vtrack(k,0),vtrack(k,1), " and ", i,j
                                         	vtrack(k,0) = (vtrack(k,0)+DBLE(i))/2.0d0
@@ -33,10 +51,10 @@ subroutine get_vortices(vort,vortarray)
                                     		!WRITE (unit=6,fmt="(a, 2f10.2)") "We get ", vtrack(k,0),vtrack(k,1)
                                     	end if
                                     	
-                                    	if(temp < 6.0d0 .and. sign(1.0d0,ret) .ne. sign(1.0d0,vtrack(k,2))) then
+                                    	if(temp < intervort .and. sign(1.0d0,ret) .ne. sign(1.0d0,vtrack(k,2))) then
                                         	vtrack(vlength,0) = DBLE(i)
                                         	vtrack(vlength,1) = DBLE(j)
-                                        	CALL LINEINTVF(velx,vely,i-5,i+5,j-5,j+5,ret)
+                                        	CALL LINEINTVF(velx,vely,i-ilineintsize,i+ilineintsize,j-ilineintsize,j+ilineintsize,ret)
                              				vtrack(vlength,2) = ret
                                         	vlength = vlength + 1
                                       		!WRITE (unit=6,fmt="(i3, a, i3, a, f10.7)") i, " , ", j, " : ", uux
@@ -46,10 +64,10 @@ subroutine get_vortices(vort,vortarray)
                                         	dist = temp
                                         end if                                        
                                 end do
-                                if(dist > 6.0d0) then
+                                if(dist > intervort) then
                                         vtrack(vlength,0) = DBLE(i)
                                         vtrack(vlength,1) = DBLE(j)
-                                        CALL LINEINTVF(velx,vely,i-5,i+5,j-5,j+5,ret)
+                                        CALL LINEINTVF(velx,vely,i-ilineintsize,i+ilineintsize,j-ilineintsize,j+ilineintsize,ret)
                              			vtrack(vlength,2) = ret
                                         vlength = vlength + 1
                                       	!WRITE (unit=6,fmt="(i3, a, i3, a, f10.7)") i, " , ", j, " : ", uux
@@ -57,7 +75,7 @@ subroutine get_vortices(vort,vortarray)
                         else
                                 vtrack(vlength,0) = DBLE(i)
                                 vtrack(vlength,1) = DBLE(j)
-                                CALL LINEINTVF(velx,vely,i-5,i+5,j-5,j+5,ret)
+                                CALL LINEINTVF(velx,vely,i-ilineintsize,i+ilineintsize,j-ilineintsize,j+ilineintsize,ret)
                                 vtrack(vlength,2) = ret
                                 vlength = vlength + 1
                                 !WRITE (unit=6,fmt="(i3, a, i3, a, f10.7)") i, " , ", j, " : ", uux

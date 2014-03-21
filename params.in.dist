@@ -11,40 +11,49 @@ integer :: afmSlice = 120
 double precision :: xi1 = 0.066d0
 double precision :: afmXScale=0.035d0
 double precision :: afmYscale=1.0d0
-
+double precision :: TRUNCPARAM = 1.0d0
 !Iterations to run
 integer :: NSTEPS=300000
+integer :: ISTEPS=10000
 
 !Resolution
 integer,parameter :: NX = 1024
 integer,parameter :: NY = 512
-double precision :: DSPACE = 0.4d0
+double precision :: DSPACE = 0.4d0, DTSIZE = 0.01d0
 
 !Flow Speed in X Dir
 integer :: VOBS = 35, VOBE = 35, VOBST = 1
 
 !Potential types - 0 object - 1 free rotational obj - 2 oscillating obj - 3 afm-img
 logical :: enablePot = .true.
+logical :: enableTrap = .false.
 integer :: potType = 0
-
+integer :: potRep = 0
 
 !Object properties
 double precision :: RRX=1.0d0
 double precision :: RRY=2.0d0
 double precision :: OBJXDASH=0.0d0
 double precision :: OBJYDASH=0.0d0
+double precision :: OBJHEIGHT=50.0d0
 !Rotating obj
 double precision :: OBJANGLE=0.1d0
 double precision :: OBJANGLEV=0.1d0
 double precision :: MOMINERTIA=0.000001d0
 !Oscillating Obj
 double precision :: FVAL = 0.0d0, WF = 0.0d0,W0 = 0.05d0 !force amp,force feq, nat freq
+!Trap
+double precision :: TXDASH=3.417d0
+double precision :: TYDASH=0.0d0
 
 !Dump frequency
-integer :: dumpv = 1, dumpd = 1, dumpwf = 10000
+integer :: dumpv = 100, dumpd = 100, dumpwf = 1000000
 
 !Noise Amplitude - 0.001d0 works well
 integer :: noiseamp = 0.000d0
 
-
+!GPE Type - 0 Natural Units - 1 Hamonic Oscillator Units
+integer :: RHSType = 0
+double precision :: harm_osc_C = 100.0d0
+double precision :: harm_osc_mu = sqrt(harm_osc_C/PI)
 

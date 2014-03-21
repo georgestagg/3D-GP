@@ -15,7 +15,11 @@ subroutine iterate (rt)
 	
 	if (rt == 0) then	
 		call calc_norm
-		GRID = sqrt(DSPACE*DSPACE*NX*NY)*GRID/sqrt(NORM)
+		!WRITE(6,*) NORM
+		GRID = GRID/sqrt(NORM)
+		if (RHSType .eq. 0) then
+			GRID = GRID*sqrt(DSPACE*DSPACE*NX*NY)
+		end if
 	end if
 end subroutine
 !!!!!!!!!!!!!!!!!!!!!!!
@@ -29,15 +33,26 @@ subroutine rhs (gt, kk)
 	integer :: i,j,BC
 	complex*16, dimension(-NX/2:NX/2,-NY/2:NY/2) :: gt, kk
 	kk=0
-	do i = -NX/2,NX/2
-		do j = -NY/2,NY/2
-			
-			kk(i,j) = 0.5d0*(4.0d0*gt(BC(i,0),BC(j,1))- gt(BC(i,0),BC(j+1,1))- gt(BC(i,0),BC(j-1,1))-&
-					 gt(BC(i+1,0),BC(j,1))-gt(BC(i-1,0),BC(j,1)))/(DSPACE**2.0d0) + gt(i,j)*gt(i,j)*CONJG(gt(i,j))-&
-					 gt(i,j) + OBJPOT(i,j)*gt(i,j)+ tanh(TIME/100.0d0)*&
-					 VOB*EYE*(gt(BC(i+1,0),BC(j,1))-gt(BC(i-1,0),BC(j,1)))/(2.0d0*DSPACE)
-		end do
-	end do				
+	if(RHSType .eq. 0) then
+		do i = -NX/2,NX/2
+			do j = -NY/2,NY/2
+				kk(i,j) = 0.5d0*(4.0d0*gt(BC(i,0),BC(j,1))- gt(BC(i,0),BC(j+1,1))- gt(BC(i,0),BC(j-1,1))-&
+						 gt(BC(i+1,0),BC(j,1))-gt(BC(i-1,0),BC(j,1)))/(DSPACE**2.0d0) + gt(i,j)*gt(i,j)*CONJG(gt(i,j))-&
+						 gt(i,j) + OBJPOT(i,j)*gt(i,j)+ tanh(TIME/100.0d0)*&
+						 VOB*EYE*(gt(BC(i+1,0),BC(j,1))-gt(BC(i-1,0),BC(j,1)))/(2.0d0*DSPACE)
+			end do
+		end do	
+	end if
+	
+	if(RHSType .eq. 1) then
+		do i = -NX/2,NX/2
+			do j = -NY/2,NY/2
+				kk(i,j) = 0.5d0*(4.0d0*gt(BC(i,0),BC(j,1))- gt(BC(i,0),BC(j+1,1))- gt(BC(i,0),BC(j-1,1))-&
+						 gt(BC(i+1,0),BC(j,1))-gt(BC(i-1,0),BC(j,1)))/(DSPACE**2.0d0) + harm_osc_C*gt(i,j)*gt(i,j)*CONJG(gt(i,j))-&
+						 gt(i,j) + OBJPOT(i,j)*gt(i,j) -harm_osc_mu*gt(i,j)
+			end do
+		end do	
+	end if	
 	kk=kk/(EYE)
 end subroutine
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
