@@ -1,6 +1,9 @@
 subroutine calc_OBJPOT 				
 	use params
 	implicit none
+	integer :: i,j
+	if(TIME .lt. 2.2619d0) then
+		OBJPOT = 0.0d0
 	if (enablePot) then
 		if(potType .eq. 0) then
 			call calc_OBJPOT_obj
@@ -15,6 +18,20 @@ subroutine calc_OBJPOT
 			call calc_OBJPOT_afm
 		end if		
 	end if
+	
+	if (enableTrap) then
+		TXDASH  = TXDASH  + (TVXDASH*DBLE(DT))
+		TYDASH  = TYDASH  + (TVYDASH*DBLE(DT))  
+		do i = -NX/2,NX/2
+		do j = -NY/2,NY/2
+				OBJPOT(i,j) = OBJPOT(i,j) + 0.5d0*(&
+				(dble(i)*DSPACE+TXDASH)*(dble(i)*DSPACE+TXDASH)+(dble(j)*DSPACE+TYDASH)*(dble(j)*DSPACE+TYDASH)&
+				)
+		end do
+		end do
+	end if
+	
+	end if
 end subroutine
 
 subroutine calc_OBJPOT_osc		
@@ -26,7 +43,7 @@ subroutine calc_OBJPOT_osc
 		do j = -NY/2,NY/2
 			rx = (dble(i)*DSPACE)-OBJXDASH
 			ry = (dble(j)*DSPACE)-OBJYDASH
-			OBJPOT(i,j) = 50.0d0*EXP(-(1.0d0/RRX**2.0d0)*(rx**2.0d0) - (1.0d0/RRY**2.0d0)*(ry**2.0d0))
+			OBJPOT(i,j) = OBJHEIGHT*EXP(-(1.0d0/RRX**2.0d0)*(rx**2.0d0) - (1.0d0/RRY**2.0d0)*(ry**2.0d0))
 		end do
 	end do
 end subroutine
@@ -50,7 +67,7 @@ subroutine calc_OBJPOT_rot
 			 point(1) = dble(i)*DSPACE
              point(2) = dble(j)*DSPACE
 			 rotpoint = matmul(rotmat,point)
-           OBJPOT(i,j) = 50.0d0*EXP( -(1.0d0/RRX**2.0d0)*(rotpoint(1)-OBJXDASH)**2.0d0 &
+           OBJPOT(i,j) = OBJHEIGHT*EXP( -(1.0d0/RRX**2.0d0)*(rotpoint(1)-OBJXDASH)**2.0d0 &
 									 -(1.0d0/RRY**2.0d0)*(rotpoint(2)-OBJYDASH)**2.0d0 ) 
        end do 
    end do 
@@ -66,7 +83,7 @@ subroutine calc_OBJPOT_obj
 		do j = -NY/2,NY/2
 			rx = (dble(i)*DSPACE)-OBJXDASH
 			ry = (dble(j)*DSPACE)-OBJYDASH
-			OBJPOT(i,j) = 50.0d0*EXP(-(1.0d0/RRX**2.0d0)*(rx**2.0d0) - (1.0d0/RRY**2.0d0)*(ry**2.0d0))
+			OBJPOT(i,j) = OBJHEIGHT*EXP(-(1.0d0/RRX**2.0d0)*(rx**2.0d0) - (1.0d0/RRY**2.0d0)*(ry**2.0d0))
 		end do
 	end do
 end subroutine
@@ -101,11 +118,13 @@ subroutine calc_OBJPOT_afm
 			end if
 			CALL interp(di,xdat,ydat,ity)
 			if(dj < ity) then			
-				OBJPOT(i,j) = 50.0d0
+				OBJPOT(i,j) = OBJHEIGHT
 			end if
 		end do
 	end do
 	close(5)
+	
+	OBJPOT(:,-NY/2+NINT(NY/TRUNCPARAM):NY/2) = 0.0d0
 end subroutine
 
 

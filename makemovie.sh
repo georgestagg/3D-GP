@@ -6,22 +6,22 @@ nx=`grep -F "NX" < params.in | grep -o "[0-9]*"`
 ny=`grep -F "NY" < params.in | grep -o "[0-9]*"`
 nofiles=`ls $1plot.* |tac| grep -o -m 1 "\.[0-9]*" | grep -o "[0-9]*"`
 scaledy=`echo "2048*($ny/$nx)" | bc -l | awk '{printf("%d\n",$1 + 0.5)}'`
-scaledyvort=`echo "1577*($ny/$nx)" | bc -l | awk '{printf("%d\n",$1 + 0.5)}'`
+scaledyvort=`echo "1577*($ny/$nx)*0.927" | bc -l | awk '{printf("%d\n",$1 + 0.5)}'`
 dspace=`grep -F "DSPACE" < params.in | grep -o "=.*$" | grep -o "[0-9.-]*" | xargs |awk '{printf("%f\n",$1*(10**$2))}'`
 
 if [ -z "$4" ]; then
-	xrange=`echo "$nx*$dspace" | bc -l`
+	xrange=`echo "$nx*$dspace/2" | bc -l`
 else
 	xrange=$4
 fi
 
 if [ -z "$5" ]; then
-	yrange=`echo "$ny*$dspace" | bc -l`
+	yrange=`echo "$ny*$dspace/2" | bc -l`
 else
 	yrange=$5
 fi
 
-echo "running gnuplot"
+echo "running gnuplot - nx = $nx - ny = $ny - dspace = $dspace - xrange = $xrange - yrange = $yrange"
 for count in $(eval echo "{0001..$nofiles}")
 do
 if [ "$2" = "density" ]; then
@@ -79,11 +79,15 @@ set xrange[-$xrange:$xrange]
 set yrange[-$yrange:$yrange]
 unset colorbox
 set output '$count.v.png';
+set ytics nomirror;
+unset xtics;
+set border 7;
 set style line 9 linecolor rgb 'blue' pt 6 ps 2
 set style line 7 linecolor rgb 'green' pt 7 ps 2
 plot '$1plotvort.$count' u (\$3==0?-1000:\$1):(\$3==0?-1000:\$2) ps 2 pt 7 lc 3,'$1plotvort.$count' u (\$3==1?-1000:\$1):(\$3==1?-1000:\$2) ps 2 pt 9 lc 1" | gnuplot;
 convert $count.v.png -transparent white $count.v.png
 composite $count.v.png $count.d.png $count.f.png
+rm $count.v.png $count.d.png
 fi
 done
 
