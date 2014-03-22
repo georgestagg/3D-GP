@@ -45,9 +45,11 @@ double precision :: FVAL = 0.0d0, WF = 0.0d0,W0 = 0.05d0 !force amp,force feq, n
 !Trap
 double precision :: TXDASH=3.417d0
 double precision :: TYDASH=0.0d0
+double precision :: TVXDASH=2.0d0
+double precision :: TVYDASH=0.0d0
 
 !Dump frequency
-integer :: dumpv = 100, dumpd = 100, dumpwf = 1000000
+integer :: dumpd = 100, dumpwf = 1000000
 
 !Noise Amplitude - 0.001d0 works well
 integer :: noiseamp = 0.000d0
