@@ -10,7 +10,7 @@ PROGRAMS = gp
 
 all: $(PROGRAMS)
 
-gp: params.o utils.o rhs.o potential.o vortex.o
+gp: params.o utils.o rhs.o potential.o
 
 %: %.o
 	$(FC) $(FCFLAGS) -o $@ $^ $(LDFLAGS)

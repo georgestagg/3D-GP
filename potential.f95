@@ -2,7 +2,7 @@ subroutine calc_OBJPOT
 	use params
 	implicit none
 	integer :: i,j
-	if(TIME .lt. 2.2619d0) then
+	if(TIME .lt. 2.827d0) then
 		OBJPOT = 0.0d0
 	if (enablePot) then
 		if(potType .eq. 0) then
@@ -22,6 +22,29 @@ subroutine calc_OBJPOT
 	if (enableTrap) then
 		TXDASH  = TXDASH  + (TVXDASH*DBLE(DT))
 		TYDASH  = TYDASH  + (TVYDASH*DBLE(DT))  
+		do i = -NX/2,NX/2
+		do j = -NY/2,NY/2
+				OBJPOT(i,j) = OBJPOT(i,j) + 0.5d0*(&
+				(dble(i)*DSPACE+TXDASH)*(dble(i)*DSPACE+TXDASH)+(dble(j)*DSPACE+TYDASH)*(dble(j)*DSPACE+TYDASH)&
+				)
+		end do
+		end do
+	end if
+	
+	end if
+
+	!if(TIME .gt. 0.0d0 .and. OBJHEIGHT > 0.0d0) then
+	if(TIME .gt. 2.827d0 .and. OBJHEIGHT > 0.0d0) then
+		OBJPOT = 0.0d0
+	if (enablePot) then
+		OBJHEIGHT  = OBJHEIGHT  - (114.1*DT)
+		if(OBJHEIGHT .lt. 0.0d0) then
+			OBJHEIGHT = 0.0d0
+		end if
+		call calc_OBJPOT_obj	
+	end if
+	
+	if (enableTrap) then
 		do i = -NX/2,NX/2
 		do j = -NY/2,NY/2
 				OBJPOT(i,j) = OBJPOT(i,j) + 0.5d0*(&

@@ -18,6 +18,7 @@ make
 mv gp $origdir
 mv *.mod $origdir
 cp makemovie.sh params.in $origdir
+cp -r ./scripts $origdir/scripts
 #fi
 make clean
 #go back
