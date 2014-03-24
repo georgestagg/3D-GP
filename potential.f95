@@ -1,60 +1,119 @@
+
 subroutine calc_OBJPOT 				
 	use params
 	implicit none
 	integer :: i,j
-	if(TIME .lt. 2.827d0) then
-		OBJPOT = 0.0d0
-	if (enablePot) then
-		if(potType .eq. 0) then
-			call calc_OBJPOT_obj
+	OBJPOT = 0.0d0
+	!Normal potential and Trap
+	if (doShin .eq. 0) then
+		if (enablePot) then
+			if(potType .eq. 0) then
+				call calc_OBJPOT_obj
+			end if	
+			if(potType .eq. 1) then
+				call calc_OBJPOT_rot
+			end if
+			if(potType .eq. 2) then
+				call calc_OBJPOT_osc
+			end if
+			if(potType .eq. 3) then
+				call calc_OBJPOT_afm
+			end if	
 		end if	
-		if(potType .eq. 1) then
-			call calc_OBJPOT_rot
+		if (enableTrap) then
+			do i = -NX/2,NX/2
+			do j = -NY/2,NY/2
+					OBJPOT(i,j) = OBJPOT(i,j) + 0.5d0*(&
+					(dble(i)*DSPACE+TXDASH)*(dble(i)*DSPACE+TXDASH)+(dble(j)*DSPACE+TYDASH)*(dble(j)*DSPACE+TYDASH))
+			end do
+			end do
 		end if
-		if(potType .eq. 2) then
-			call calc_OBJPOT_osc
-		end if
-		if(potType .eq. 3) then
-			call calc_OBJPOT_afm
-		end if		
 	end if
-	
-	if (enableTrap) then
-		TXDASH  = TXDASH  + (TVXDASH*DBLE(DT))
-		TYDASH  = TYDASH  + (TVYDASH*DBLE(DT))  
-		do i = -NX/2,NX/2
-		do j = -NY/2,NY/2
-				OBJPOT(i,j) = OBJPOT(i,j) + 0.5d0*(&
-				(dble(i)*DSPACE+TXDASH)*(dble(i)*DSPACE+TXDASH)+(dble(j)*DSPACE+TYDASH)*(dble(j)*DSPACE+TYDASH)&
-				)
-		end do
-		end do
-	end if
-	
+	!Shin Experiment
+	if (doShin .eq. 1) then
+		call calc_OBJPOT_shin
 	end if
 
-	!if(TIME .gt. 0.0d0 .and. OBJHEIGHT > 0.0d0) then
-	if(TIME .gt. 2.827d0 .and. OBJHEIGHT > 0.0d0) then
-		OBJPOT = 0.0d0
-	if (enablePot) then
-		OBJHEIGHT  = OBJHEIGHT  - (114.1*DT)
-		if(OBJHEIGHT .lt. 0.0d0) then
-			OBJHEIGHT = 0.0d0
+end subroutine
+
+subroutine calc_OBJPOT_shin
+!-Note:This is the shin experiment
+	use params
+	implicit none
+	integer :: i,j
+	double precision :: trVelx,trVely
+	!Section 1 - Ramping up trap movement
+	if(TIME .lt. (TTM/4.0d0)) then
+		if (enablePot) then
+			call calc_OBJPOT_obj
 		end if
-		call calc_OBJPOT_obj	
+		if (enableTrap) then
+			trVelx = (TVXDASH/2.0d0)*(tanh((6.0d0*DBLE(TIME)/(TTM*4.0d0))-3.0d0)+1.0d0)
+			trVely = (TVYDASH/2.0d0)*(tanh((6.0d0*DBLE(TIME)/(TTM*4.0d0))-3.0d0)+1.0d0)
+			TXDASH  = TXDASH  + (trVelx*DBLE(DT))
+			TYDASH  = TYDASH  + (trVely*DBLE(DT))  
+			do i = -NX/2,NX/2
+			do j = -NY/2,NY/2
+					OBJPOT(i,j) = OBJPOT(i,j) + 0.5d0*(&
+					(dble(i)*DSPACE+TXDASH)*(dble(i)*DSPACE+TXDASH)+(dble(j)*DSPACE+TYDASH)*(dble(j)*DSPACE+TYDASH))
+			end do
+			end do
+		end if
+	end if
+	!Section 2 - trap moving at terminal velocity
+	if(TIME .gt. (TTM/4.0d0) .and. TIME .lt. (TTM/2.0d0)) then
+		if (enablePot) then
+			call calc_OBJPOT_obj
+		end if
+		if (enableTrap) then
+			TXDASH  = TXDASH  + (TVXDASH*DBLE(DT))
+			TYDASH  = TYDASH  + (TVYDASH*DBLE(DT))  
+			do i = -NX/2,NX/2
+			do j = -NY/2,NY/2
+					OBJPOT(i,j) = OBJPOT(i,j) + 0.5d0*(&
+					(dble(i)*DSPACE+TXDASH)*(dble(i)*DSPACE+TXDASH)+(dble(j)*DSPACE+TYDASH)*(dble(j)*DSPACE+TYDASH))
+			end do
+			end do
+		end if
+	end if
+	!Section 3 - Ramping down trap movement
+	if(TIME .gt. (3.0d0*TTM/4.0d0) .and. TIME .lt. TTM) then
+		if (enablePot) then
+			call calc_OBJPOT_obj
+		end if
+		if (enableTrap) then
+			trVelx = (TVXDASH/2.0d0)*(tanh((-6.0d0*(DBLE(TIME)-(3.0d0*TTM/4.0d0))/(TTM/4.0d0))+3.0d0)+1.0d0)
+			trVely = (TVYDASH/2.0d0)*(tanh((-6.0d0*(DBLE(TIME)-(3.0d0*TTM/4.0d0))/(TTM/4.0d0))+3.0d0)+1.0d0)
+			TXDASH  = TXDASH  + (trVelx*DBLE(DT))
+			TYDASH  = TYDASH  + (trVely*DBLE(DT))  
+			do i = -NX/2,NX/2
+			do j = -NY/2,NY/2
+					OBJPOT(i,j) = OBJPOT(i,j) + 0.5d0*(&
+					(dble(i)*DSPACE+TXDASH)*(dble(i)*DSPACE+TXDASH)+(dble(j)*DSPACE+TYDASH)*(dble(j)*DSPACE+TYDASH))
+			end do
+			end do
+		end if
 	end if
 	
-	if (enableTrap) then
-		do i = -NX/2,NX/2
-		do j = -NY/2,NY/2
-				OBJPOT(i,j) = OBJPOT(i,j) + 0.5d0*(&
-				(dble(i)*DSPACE+TXDASH)*(dble(i)*DSPACE+TXDASH)+(dble(j)*DSPACE+TYDASH)*(dble(j)*DSPACE+TYDASH)&
-				)
-		end do
-		end do
+	!Section 4 - Ramping down laser beam
+	if(TIME .gt. TTM .and. OBJHEIGHT > 0.0d0) then
+		if (enablePot) then
+			OBJHEIGHT  = OBJHEIGHT  - (114.1*DT)
+			if(OBJHEIGHT .lt. 0.0d0) then
+				OBJHEIGHT = 0.0d0
+			end if
+			call calc_OBJPOT_obj	
+		end if
+		if (enableTrap) then
+			do i = -NX/2,NX/2
+			do j = -NY/2,NY/2
+					OBJPOT(i,j) = OBJPOT(i,j) + 0.5d0*(&
+					(dble(i)*DSPACE+TXDASH)*(dble(i)*DSPACE+TXDASH)+(dble(j)*DSPACE+TYDASH)*(dble(j)*DSPACE+TYDASH))
+			end do
+			end do
+		end if
 	end if
 	
-	end if
 end subroutine
 
 subroutine calc_OBJPOT_osc		
