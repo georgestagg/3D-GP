@@ -38,11 +38,11 @@ end
 
 for i = 6:length(dens)-6
 for j = 6:length(dens)-6
-    if(sqrt(gridx(i)*gridx(i)+gridy(j)*gridy(j))<TFradius)
+    %if(sqrt(gridx(i)*gridx(i)+gridy(j)*gridy(j))<TFradius)
         if((potential(i,j) < TFpot) && (sqrt(velx(i,j)*velx(i,j)+vely(i,j)*vely(i,j))>2.0))
             presort(i,j)=LINEINTVF(velx,vely,i,i+5,j,j+5);
         end
-    end
+    %end
 end
 end
 
@@ -53,9 +53,29 @@ end
 %phase(dens<0.0005)=0;
 %imagesc(sqrt(velx.*velx+vely.*vely))
 %imagesc(gridx,gridy,dens)
-imagesc(dens)
+%imagesc(dens)
 %imagesc(potential)
-%imagesc(presort)
+
+posareas = bwlabel(presort>5.0);
+negareas = bwlabel(presort<-5.0);
+
+for i = 1:max(max(posareas))
+    [r,c] = find(posareas== i);
+    if(length(r) > 8)
+        xlocs = [xlocs,mean(gridx(c))];
+        ylocs = [ylocs,mean(gridy(r))];
+        pol = [pol,1];
+    end
+end
+
+for i = 1:max(max(negareas))
+    [r,c] = find(negareas== i);
+    if(length(r) > 8)
+        xlocs = [xlocs,mean(gridx(c))];
+        ylocs = [ylocs,mean(gridy(r))];
+        pol = [pol,-1];
+    end
+end
 
 function ret = LINEINTVF(fieldx,fieldy,x,ex,y,ey)
 	l1=0.0d0;
