@@ -48,8 +48,8 @@ subroutine calc_OBJPOT_shin
 			call calc_OBJPOT_obj
 		end if
 		if (enableTrap) then
-			trVelx = (TVXDASH/2.0d0)*(tanh((6.0d0*DBLE(TIME)/(TTM*4.0d0))-3.0d0)+1.0d0)
-			trVely = (TVYDASH/2.0d0)*(tanh((6.0d0*DBLE(TIME)/(TTM*4.0d0))-3.0d0)+1.0d0)
+			trVelx = (TVXDASH/2.0d0)*(tanh((6.0d0*TIME/(TTM*4.0d0))-3.0d0)+1.0d0)
+			trVely = (TVYDASH/2.0d0)*(tanh((6.0d0*TIME/(TTM*4.0d0))-3.0d0)+1.0d0)
 			TXDASH  = TXDASH  + (trVelx*DBLE(DT))
 			TYDASH  = TYDASH  + (trVely*DBLE(DT))  
 			do i = -NX/2,NX/2
@@ -61,7 +61,7 @@ subroutine calc_OBJPOT_shin
 		end if
 	end if
 	!Section 2 - trap moving at terminal velocity
-	if(TIME .gt. (TTM/4.0d0) .and. TIME .lt. (TTM/2.0d0)) then
+	if(TIME .gt. (TTM/4.0d0) .and. TIME .lt.  (3.0d0*TTM/4.0d0)) then
 		if (enablePot) then
 			call calc_OBJPOT_obj
 		end if
@@ -82,8 +82,8 @@ subroutine calc_OBJPOT_shin
 			call calc_OBJPOT_obj
 		end if
 		if (enableTrap) then
-			trVelx = (TVXDASH/2.0d0)*(tanh((-6.0d0*(DBLE(TIME)-(3.0d0*TTM/4.0d0))/(TTM/4.0d0))+3.0d0)+1.0d0)
-			trVely = (TVYDASH/2.0d0)*(tanh((-6.0d0*(DBLE(TIME)-(3.0d0*TTM/4.0d0))/(TTM/4.0d0))+3.0d0)+1.0d0)
+			trVelx = (TVXDASH/2.0d0)*(tanh((-6.0d0*(TIME-(3.0d0*TTM/4.0d0))/(TTM/4.0d0))+3.0d0)+1.0d0)
+			trVely = (TVYDASH/2.0d0)*(tanh((-6.0d0*(TIME-(3.0d0*TTM/4.0d0))/(TTM/4.0d0))+3.0d0)+1.0d0)
 			TXDASH  = TXDASH  + (trVelx*DBLE(DT))
 			TYDASH  = TYDASH  + (trVely*DBLE(DT))  
 			do i = -NX/2,NX/2
