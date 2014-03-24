@@ -4,8 +4,8 @@
 
 nx=`grep -F "NX" < params.in | grep -o "[0-9]*"`
 ny=`grep -F "NY" < params.in | grep -o "[0-9]*"`
-nofiles=`ls $1plot.* |tac| grep -o -m 1 "\.[0-9]*" | grep -o "[0-9]*"`
-scaledy=`echo "2048*($ny/$nx)" | bc -l | awk '{printf("%d\n",$1 + 0.5)}'`
+nofiles=`ls $1plot* |tac| grep -o -m 1 "\.[0-9]*" | grep -o "[0-9]*"`
+scaledy=`echo "1024*($ny/$nx)" | bc -l | awk '{printf("%d\n",$1 + 0.5)}'`
 scaledyvort=`echo "1577*($ny/$nx)*0.927" | bc -l | awk '{printf("%d\n",$1 + 0.5)}'`
 dspace=`grep -F "DSPACE" < params.in | grep -o "=.*$" | grep -o "[0-9.-]*" | xargs |awk '{printf("%f\n",$1*(10**$2))}'`
 
@@ -28,12 +28,12 @@ if [ "$2" = "density" ]; then
 echo "
 set pm3d map
 set title ''
-set terminal png enhanced size 2048,$scaledy crop;
+set terminal png enhanced size 1024,$scaledy crop;
 set cbrange [0:$3]
 set xrange[-$xrange:$xrange]
 set yrange[-$yrange:$yrange]
 set output '$count.png';
-splot '$1plot.$count' using 1:2:3" | gnuplot;
+splot '$1plotwf.$count' using 1:2:(sqrt(\$3**2+\$4**2))" | gnuplot;
 fi
 
 if [ "$2" = "phase" ]; then

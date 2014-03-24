@@ -5,7 +5,7 @@ neg = [];
 for i=startno:endno
     [gridx,gridy,dens,phase,potential] = gpeget2dWF(dirarg,i,speed,nx,ny);
     fprintf('read %d\n',i);
-    [~,~,pol] = gpeget2dvort(dens,phase,gridx,gridy,potential);
+    [xlocs,ylocs,pol] = gpeget2dvort(dens,phase,gridx,gridy,potential);
     total(i+1) = length(pol);
     neg(i+1) = sum(pol);
     pos(i+1) = length(pol) - sum(pol);
