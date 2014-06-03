@@ -14,11 +14,15 @@ subroutine iterate (rt)
 	GRID = GRID + DT*(k1 + 2.0d0*k2 + 2.0d0*k3 + k4)/6.0d0
 	
 	if (rt == 0) then	
-		call calc_norm
-		!WRITE(6,*) NORM
-		GRID = GRID/sqrt(NORM)
 		if (RHSType .eq. 0) then
+			call calc_norm
+			WRITE(6,*) NORM
+			GRID = GRID/sqrt(NORM)
 			GRID = GRID*sqrt(DSPACE*DSPACE*NX*NY)
+		end if
+		if (RHSType .eq. 1) then
+			call calc_norm
+			GRID = GRID/sqrt(NORM)
 		end if
 	end if
 end subroutine
@@ -53,7 +57,7 @@ subroutine rhs (gt, kk)
 			end do
 		end do	
 	end if	
-	kk=kk/(EYE)
+	kk=kk/(EYE-GAMMAC)
 end subroutine
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 

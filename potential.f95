@@ -43,13 +43,13 @@ subroutine calc_OBJPOT_shin
 	integer :: i,j
 	double precision :: trVelx,trVely
 	!Section 1 - Ramping up trap movement
-	if(TIME .lt. (TTM/4.0d0)) then
+	if(TIME .lt. (TTM/8.0d0)) then
 		if (enablePot) then
 			call calc_OBJPOT_obj
 		end if
 		if (enableTrap) then
-			trVelx = (TVXDASH/2.0d0)*(tanh((6.0d0*TIME/(TTM*4.0d0))-3.0d0)+1.0d0)
-			trVely = (TVYDASH/2.0d0)*(tanh((6.0d0*TIME/(TTM*4.0d0))-3.0d0)+1.0d0)
+			trVelx = (TVXDASH/2.0d0)*(tanh((6.0d0*TIME/(TTM*8.0d0))-3.0d0)+1.0d0)
+			trVely = (TVYDASH/2.0d0)*(tanh((6.0d0*TIME/(TTM*8.0d0))-3.0d0)+1.0d0)
 			TXDASH  = TXDASH  + (trVelx*DBLE(DT))
 			TYDASH  = TYDASH  + (trVely*DBLE(DT))  
 			do i = -NX/2,NX/2
@@ -61,7 +61,7 @@ subroutine calc_OBJPOT_shin
 		end if
 	end if
 	!Section 2 - trap moving at terminal velocity
-	if(TIME .gt. (TTM/4.0d0) .and. TIME .lt.  (3.0d0*TTM/4.0d0)) then
+	if(TIME .gt. (TTM/8.0d0) .and. TIME .lt.  (7.0d0*TTM/8.0d0)) then
 		if (enablePot) then
 			call calc_OBJPOT_obj
 		end if
@@ -77,13 +77,13 @@ subroutine calc_OBJPOT_shin
 		end if
 	end if
 	!Section 3 - Ramping down trap movement
-	if(TIME .gt. (3.0d0*TTM/4.0d0) .and. TIME .lt. TTM) then
+	if(TIME .gt. (7.0d0*TTM/8.0d0) .and. TIME .lt. TTM) then
 		if (enablePot) then
 			call calc_OBJPOT_obj
 		end if
 		if (enableTrap) then
-			trVelx = (TVXDASH/2.0d0)*(tanh((-6.0d0*(TIME-(3.0d0*TTM/4.0d0))/(TTM/4.0d0))+3.0d0)+1.0d0)
-			trVely = (TVYDASH/2.0d0)*(tanh((-6.0d0*(TIME-(3.0d0*TTM/4.0d0))/(TTM/4.0d0))+3.0d0)+1.0d0)
+			trVelx = (TVXDASH/2.0d0)*(tanh((-6.0d0*(TIME-(7.0d0*TTM/8.0d0))/(TTM/8.0d0))+3.0d0)+1.0d0)
+			trVely = (TVYDASH/2.0d0)*(tanh((-6.0d0*(TIME-(7.0d0*TTM/8.0d0))/(TTM/8.0d0))+3.0d0)+1.0d0)
 			TXDASH  = TXDASH  + (trVelx*DBLE(DT))
 			TYDASH  = TYDASH  + (trVely*DBLE(DT))  
 			do i = -NX/2,NX/2
@@ -96,11 +96,13 @@ subroutine calc_OBJPOT_shin
 	end if
 	
 	!Section 4 - Ramping down laser beam
-	if(TIME .gt. TTM .and. OBJHEIGHT > 0.0d0) then
+	if(TIME .gt. TTM) then
 		if (enablePot) then
-			OBJHEIGHT  = OBJHEIGHT  - (114.1*DT)
+			if(OBJHEIGHT .gt. 0.0d0) then
+				OBJHEIGHT  = OBJHEIGHT  - (0.0143d0)
+			end if
 			if(OBJHEIGHT .lt. 0.0d0) then
-				OBJHEIGHT = 0.0d0
+					OBJHEIGHT = 0.0d0
 			end if
 			call calc_OBJPOT_obj	
 		end if
@@ -187,6 +189,7 @@ subroutine calc_OBJPOT_afm
 	end do
 	end do
 	ydat = ydatb(afmSlice,:)
+	WRITE(6,*)MINVAL(ydat(3:afmRES-3))
 	ydat = ydat - MINVAL(ydat(3:afmRES-3)) - (NY/2)*DSPACE
 	ydat = ydat*afmYscale
 	OBJPOT = 0.0d0
@@ -199,7 +202,7 @@ subroutine calc_OBJPOT_afm
 				di = xdat(afmRES-3)
 			end if
 			CALL interp(di,xdat,ydat,ity)
-			if(dj < ity) then			
+			if(dj < (ity+OBJYDASH)) then			
 				OBJPOT(i,j) = OBJHEIGHT
 			end if
 		end do
