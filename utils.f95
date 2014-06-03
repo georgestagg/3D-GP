@@ -8,7 +8,7 @@ subroutine add_noise
 	call srand(seed)
 	do i = -NX/2, NX/2
 	do j = -NY/2, NY/2
-		GRID(i,j) = GRID(i,j) + CMPLX((RAND()*noiseamp)-(noiseamp/2.0d0),(RAND()*noiseamp)-(noiseamp/2.0d0))	
+		GRID(i,j) = GRID(i,j) + GRID(i,j)*CMPLX((RAND()*noiseamp)-(noiseamp/2.0d0),(RAND()*noiseamp)-(noiseamp/2.0d0))	
 	end do
 	end do
 end subroutine
@@ -28,14 +28,38 @@ subroutine calc_norm
 
 	implicit none
 	integer :: i,j
-	NORM = 0.0d0
-	do i = -NX/2,NX/2
-		do j = -NY/2,NY/2
-			NORM = NORM + GRID(i,j)*CONJG(GRID(i,j))		
-		end do
-	end do
-	NORM=NORM*DSPACE*DSPACE
+	double precision :: simpsons_int_grid
+	NORM=simpsons_int_grid(DBLE(GRID*CONJG(GRID)))
 end subroutine
+
+function simpsons_int_grid(intThing)
+	use params
+	implicit none
+	double precision :: simpsons_int_grid,a(16)
+	double precision, dimension(-NX/2:NX/2,-NY/2:NY/2) :: intThing
+	
+	a(1) = intThing(-NX/2,-NY/2)
+	a(2) = intThing(-NX/2,NY/2)
+	a(3) = intThing(NX/2,-NY/2)
+	a(4) = intThing(NX/2,NY/2)
+	
+	a(5) = 4.0d0*sum(intThing(-NX/2,-NY/2+1:NY/2-1:2))
+	a(6) = 2.0d0*sum(intThing(-NX/2,-NY/2+2:NY/2-1:2))
+	a(7) = 4.0d0*sum(intThing(NX/2,-NY/2+1:NY/2-1:2))
+	a(8) = 2.0d0*sum(intThing(NX/2,-NY/2+2:NY/2-1:2))
+	
+	a(9) = 4.0d0*sum(intThing(-NX/2+1:NX/2-1:2,-NY/2))
+   a(10) = 2.0d0*sum(intThing(-NX/2+2:NX/2-1:2,-NY/2))
+   a(11) = 4.0d0*sum(intThing(-NX/2+1:NX/2-1:2,NY/2))
+   a(12) = 2.0d0*sum(intThing(-NX/2+2:NX/2-1:2,NY/2))
+   
+   a(13) = 16.0d0*sum(intThing(-NX/2+1:NX/2-1:2,-NY/2+1:NY/2-1:2))
+   a(14) = 8.0d0* sum(intThing(-NX/2+1:NX/2-1:2,-NY/2+2:NY/2-1:2)) 
+   a(15) = 8.0d0* sum(intThing(-NX/2+2:NX/2-1:2,-NY/2+1:NY/2-1:2))
+   a(16) = 4.0d0*sum(intThing(-NX/2+2:NX/2-1:2,-NY/2+2:NY/2-1:2)) 
+   
+   simpsons_int_grid = (1.0d0/9.0d0)*(DSPACE*DSPACE)*sum(a)   
+end function
 
 subroutine calc_misc
 	use params
