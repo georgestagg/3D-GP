@@ -41,7 +41,7 @@ end
 
 for i = 6:dims(1)-6
 for j = 6:dims(2)-6
-        if((sqrt(velx(i,j).^2+vely(i,j).^2)>2.0) && sqrt((gridx(j)-comx).^2+(gridy(i)-comy).^2)<TFradius && potential(i,j)<70)
+        if((sqrt(velx(i,j).^2+vely(i,j).^2)>2.0) && sqrt((gridx(j)-comx).^2+(gridy(i)-comy).^2)<TFradius && potential(i,j)<40)
             presort(i,j)=LINEINTVF(velx,vely,i,i+5,j,j+5);
         end
 end
