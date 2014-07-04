@@ -30,6 +30,7 @@ subroutine calc_norm
 	integer :: i,j
 	double precision :: simpsons_int_grid
 	NORM=simpsons_int_grid(DBLE(GRID*CONJG(GRID)))
+	!write(6,*) NORM
 end subroutine
 
 function simpsons_int_grid(intThing)

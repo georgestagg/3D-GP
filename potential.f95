@@ -99,7 +99,7 @@ subroutine calc_OBJPOT_shin
 	if(TIME .gt. TTM) then
 		if (enablePot) then
 			if(OBJHEIGHT .gt. 0.0d0) then
-				OBJHEIGHT  = OBJHEIGHT  - (0.0143d0)
+				OBJHEIGHT  = OBJHEIGHT  - ((DT*15*71.678)/(2.0*PI*15.0*0.4))
 			end if
 			if(OBJHEIGHT .lt. 0.0d0) then
 					OBJHEIGHT = 0.0d0

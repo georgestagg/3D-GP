@@ -57,7 +57,7 @@ subroutine rhs (gt, kk)
 			end do
 		end do	
 	end if	
-	kk=kk/(EYE-GAMMAC)
+	kk=kk*(1.0d0-EYE*GAMMAC)/EYE
 end subroutine
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 

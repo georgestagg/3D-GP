@@ -6,9 +6,15 @@ polarity = pol';
 D = pdist2(points,points);
 rmdipoles = 1;
 clstring = 1;
+onlyoneleft=0;
 while(rmdipoles)
     %get nn for each vortex
     nnList = knnsearch(points,points,'k',2);
+    if(numel(nnList)<2)
+        rmdipoles=0;
+        onlyoneleft=1;
+        break;
+    end
     nnList = nnList(:,2);
     for i=1:length(nnList)
       if(i == nnList(nnList(i)) && polarity(i) ~= polarity(nnList(i)))
@@ -25,29 +31,30 @@ while(rmdipoles)
     end
 end
 
-%get nn for each vortex
-nnList = knnsearch(points,points,'k',2);
-nnList = nnList(:,2);
-D = pdist2(points,points);
-for i=1:length(nnList)
-    for j=1:length(nnList)
-        if(i==j)break;end;
-         if(polarity(i) == polarity(j))
-             distij = D(i,j);
-             distsi = D(i,:);
-             dists_nPoli = distsi(polarity == -polarity(i));
-             distsj = D(j,:);
-             dists_nPolj = distsj(polarity == -polarity(j));
-             minDistTonPol = min([dists_nPoli,dists_nPolj]);
-             
-             if(distij < minDistTonPol)
-                %disp('Clustering two vortices...')
-                clusters=clusterup(clusters,i,j);
+if(onlyoneleft==0)
+    %get nn for each vortex
+    nnList = knnsearch(points,points,'k',2);
+    nnList = nnList(:,2);
+    D = pdist2(points,points);
+    for i=1:length(nnList)
+        for j=1:length(nnList)
+            if(i==j)break;end;
+             if(polarity(i) == polarity(j))
+                 distij = D(i,j);
+                 distsi = D(i,:);
+                 dists_nPoli = distsi(polarity == -polarity(i));
+                 distsj = D(j,:);
+                 dists_nPolj = distsj(polarity == -polarity(j));
+                 minDistTonPol = min([dists_nPoli,dists_nPolj]);
+
+                 if(distij < minDistTonPol)
+                    %disp('Clustering two vortices...')
+                    clusters=clusterup(clusters,i,j);
+                 end
              end
-         end
+        end
     end
 end
-
 clusters = clusters(~cellfun('isempty',clusters));  
 %for cl=1:length(clusters)
 %    clusters{cl} =  points(clusters{cl},:);
