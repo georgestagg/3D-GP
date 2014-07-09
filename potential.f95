@@ -102,13 +102,14 @@ subroutine calc_OBJPOT_shin
 	!Section 4 - Ramping down laser beam
 	if(TIME .gt. TTM) then
 		if (enablePot) then
+			OBJHEIGHT  = OBJHEIGHT  - ((DT*15*71.678)/(2.0*PI*15.0*0.4))
 			if(OBJHEIGHT .gt. 0.0d0) then
-				OBJHEIGHT  = OBJHEIGHT  - ((DT*15*71.678)/(2.0*PI*15.0*0.4))
+				call calc_OBJPOT_obj
 			end if
 			if(OBJHEIGHT .lt. 0.0d0) then
-					OBJHEIGHT = 0.0d0
+					OBJPOT = 0.0d0
+					OBJHEIGHT = -1.0d0
 			end if
-			call calc_OBJPOT_obj
 		end if
 		if (enableTrap) then
 			do i = -NX/2,NX/2
@@ -122,6 +123,22 @@ subroutine calc_OBJPOT_shin
 	end if
 
 end subroutine
+
+subroutine calc_OBJPOT_obj
+	use params
+	implicit none
+	integer :: i,j,obj
+	double precision :: rx,ry,r2
+	do i = -NX/2,NX/2
+		do j = -NY/2,NY/2
+			rx = (dble(i)*DSPACE)-OBJXDASH
+			ry = (dble(j)*DSPACE)-OBJYDASH
+			OBJPOT(i,j) = OBJHEIGHT*&
+				EXP(-(1.0d0/RRX**2.0d0)*(rx**2.0d0) - (1.0d0/RRY**2.0d0)*(ry**2.0d0))
+		end do
+	end do
+end subroutine
+
 
 subroutine calc_OBJPOT_osc
 	use params
@@ -162,22 +179,6 @@ subroutine calc_OBJPOT_rot
 				-(1.0d0/RRY**2.0d0)*(rotpoint(2)-OBJYDASH)**2.0d0 )
        end do
    end do
-end subroutine
-
-
-subroutine calc_OBJPOT_obj
-	use params
-	implicit none
-	integer :: i,j,obj
-	double precision :: rx,ry,r2
-	do i = -NX/2,NX/2
-		do j = -NY/2,NY/2
-			rx = (dble(i)*DSPACE)-OBJXDASH
-			ry = (dble(j)*DSPACE)-OBJYDASH
-			OBJPOT(i,j) = OBJHEIGHT*&
-				EXP(-(1.0d0/RRX**2.0d0)*(rx**2.0d0) - (1.0d0/RRY**2.0d0)*(ry**2.0d0))
-		end do
-	end do
 end subroutine
 
 subroutine calc_OBJPOT_afm
