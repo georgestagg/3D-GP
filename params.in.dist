@@ -58,4 +58,4 @@ integer :: noiseamp = 0.000d0
 integer :: RHSType = 0
 double precision :: harm_osc_C = 100.0d0
 double precision :: harm_osc_mu = sqrt(harm_osc_C/PI)
-
+double precision :: GAMMAC = 0.0d0
