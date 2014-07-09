@@ -191,7 +191,7 @@ subroutine calc_energy(energy)
 			uux=(GRID(i+1,j)-GRID(i-1,j))/(2.0d0*DSPACE)
 			uuy=(GRID(i,j+1)-GRID(i,j-1))/(2.0d0*DSPACE)
 
-			energy = energy + 0.5d0*((uux*conj(uux))+(uuy*conj(uuy))) &
+			energy = energy + 0.5d0*((uux*CONJG(uux))+(uuy*CONJG(uuy))) &
 				+ 0.5d0*gg*uu*conjg(uu)*uu*conjg(uu)&
 				+ OBJPOT(i,j)*uu*conjg(uu)
 		end do
