@@ -109,6 +109,7 @@ subroutine calc_OBJPOT_shin
 			if(OBJHEIGHT .lt. 0.0d0) then
 					OBJPOT = 0.0d0
 					OBJHEIGHT = -1.0d0
+					potRep = 0 !Should stop recalculating potential now
 			end if
 		end if
 		if (enableTrap) then

@@ -36,9 +36,6 @@ subroutine runit(steps,rt,plot)
 	do i = 1, steps
 		call iterate(rt)
 		TIME = TIME + dble(DT)
-		if(potRep .eq. 1 .and. rt == 1) then
-			call calc_OBJPOT
-		end if
 		if (modulo(i,10) == 0) then
 			if (plot == 1) then
 				call calc_misc
@@ -69,7 +66,9 @@ subroutine runit(steps,rt,plot)
 				end if
 			end if
 		end if
-
+		if(potRep .eq. 1 .and. rt == 1) then
+			call calc_OBJPOT
+		end if
 	end do
 end subroutine
 
