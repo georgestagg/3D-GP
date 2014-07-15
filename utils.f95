@@ -17,7 +17,7 @@ end subroutine
 subroutine approx
 	use params
 	implicit none
-
+	integer :: i,j
 	if (RHSType .eq. 0) then
 		GRID =  1.00d0
 	end if
