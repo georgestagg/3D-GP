@@ -30,13 +30,13 @@ subroutine runit(steps,rt,plot)
 	integer :: steps,rt,i,plot
 	if (rt == 1) then
 		if (plot == 1) then
-			call dump_wavefunction(0)
+			call dump_wavefunction(0) !dump initial condition
 		end if
 	end if
 	do i = 1, steps
 		call iterate(rt)
 		TIME = TIME + dble(DT)
-		if (modulo(i,10) == 0) then
+		if (modulo(i,dumputil) == 0) then
 			if (plot == 1) then
 				call calc_misc
 			end if

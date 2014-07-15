@@ -63,7 +63,7 @@ subroutine rhs (gt, kk)
 			end do
 		end do
 	end if
-	if(GAMMAC > 0.0d0) then
+	if(DBLE(GAMMAC) > 0.0d0) then
 		kk=kk/(EYE-GAMMAC)	!Damping
 	else
 		kk = kk/EYE !No damping
