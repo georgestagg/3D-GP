@@ -17,7 +17,19 @@ end subroutine
 subroutine approx
 	use params
 	implicit none
-	GRID =  1.00d0
+
+	if (RHSType .eq. 0) then
+		GRID =  1.00d0
+	end if
+	if (RHSType .eq. 1) then
+		do i = -NX/2, NX/2
+			do j = -NY/2, NY/2
+				GRID(i,j) = (harm_osc_mu - OBJPOT(i,j))/harm_osc_C
+				if(GRID(i,j) < 0) GRID(i,j) = 0.0d0
+			end do
+		end do
+	end if
+
 end subroutine
 !!!!!!!!!!!!!!!!!!!!!!
 
