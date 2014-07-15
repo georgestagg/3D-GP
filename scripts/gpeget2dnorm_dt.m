@@ -4,7 +4,7 @@ for i=startno:stride:endno
     [gridx,gridy,dens,~,~] = gpeget2dWF(dirarg,i,speed,nx,ny);
     fprintf('read %d\n',i);
     normt = gpeget2dnorm(gridx,gridy,dens);
-    j = i/stride;
+    j = (i+(stride-startno))/stride;
     norm(j) = normt;
 end
 fclose('all');

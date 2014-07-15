@@ -1,4 +1,4 @@
-function [totalE,kinE,potE,lastE] = gpeget2denergy_dt(dirarg,startno,stride,endno,speed,nx,ny)
+function [totalE,kinE,potE,interE] = gpeget2denergy_dt(dirarg,startno,stride,endno,speed,nx,ny)
 totalE = [];
 kinE = [];
 potE = [];
@@ -11,7 +11,7 @@ for i=startno:stride:endno
     totalE(j) = tE;
     kinE(j) = kE;
     potE(j) = pE;
-    lastE(j) = lE;
+    interE(j) = lE;
 end
 fclose('all');
 end
