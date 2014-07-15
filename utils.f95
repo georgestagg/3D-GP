@@ -25,11 +25,11 @@ subroutine approx
 		do i = -NX/2, NX/2
 			do j = -NY/2, NY/2
 				GRID(i,j) = (harm_osc_mu - OBJPOT(i,j))/harm_osc_C
-				if(GRID(i,j) < 0) GRID(i,j) = 0.0d0
+				if(DBLE(GRID(i,j)) < 0) GRID(i,j) = 0.0d0
 			end do
 		end do
+		GRID = SQRT(GRID)
 	end if
-
 end subroutine
 !!!!!!!!!!!!!!!!!!!!!!
 
@@ -39,7 +39,6 @@ subroutine calc_norm
 	integer :: i,j
 	double precision :: simpsons_int_grid
 	NORM=simpsons_int_grid(DBLE(GRID*CONJG(GRID)))
-	write(6,*) NORM
 end subroutine
 
 function simpsons_int_grid(intThing)
@@ -59,14 +58,14 @@ function simpsons_int_grid(intThing)
 	a(8) = 2.0d0*sum(intThing(NX/2,-NY/2+2:NY/2-1:2))
 
 	a(9) = 4.0d0*sum(intThing(-NX/2+1:NX/2-1:2,-NY/2))
-   a(10) = 2.0d0*sum(intThing(-NX/2+2:NX/2-1:2,-NY/2))
-   a(11) = 4.0d0*sum(intThing(-NX/2+1:NX/2-1:2,NY/2))
-   a(12) = 2.0d0*sum(intThing(-NX/2+2:NX/2-1:2,NY/2))
+  a(10) = 2.0d0*sum(intThing(-NX/2+2:NX/2-1:2,-NY/2))
+  a(11) = 4.0d0*sum(intThing(-NX/2+1:NX/2-1:2,NY/2))
+  a(12) = 2.0d0*sum(intThing(-NX/2+2:NX/2-1:2,NY/2))
 
-   a(13) = 16.0d0*sum(intThing(-NX/2+1:NX/2-1:2,-NY/2+1:NY/2-1:2))
-   a(14) = 8.0d0* sum(intThing(-NX/2+1:NX/2-1:2,-NY/2+2:NY/2-1:2))
-   a(15) = 8.0d0* sum(intThing(-NX/2+2:NX/2-1:2,-NY/2+1:NY/2-1:2))
-   a(16) = 4.0d0*sum(intThing(-NX/2+2:NX/2-1:2,-NY/2+2:NY/2-1:2))
+  a(13) = 16.0d0*sum(intThing(-NX/2+1:NX/2-1:2,-NY/2+1:NY/2-1:2))
+  a(14) = 8.0d0* sum(intThing(-NX/2+1:NX/2-1:2,-NY/2+2:NY/2-1:2))
+  a(15) = 8.0d0* sum(intThing(-NX/2+2:NX/2-1:2,-NY/2+1:NY/2-1:2))
+  a(16) = 4.0d0*sum(intThing(-NX/2+2:NX/2-1:2,-NY/2+2:NY/2-1:2))
 
    simpsons_int_grid = (1.0d0/9.0d0)*(DSPACE*DSPACE)*sum(a)
 end function
