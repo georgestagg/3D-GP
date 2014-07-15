@@ -4,7 +4,7 @@ subroutine calc_OBJPOT
 	integer :: i,j
 	OBJPOT = 0.0d0
 	!Normal potential and Trap
-	if (doShin .eq. 0) then
+	if (.NOT. doShin) then
 		if (enablePot) then
 			if(potType .eq. 0) then
 				call calc_OBJPOT_obj
@@ -30,7 +30,7 @@ subroutine calc_OBJPOT
 		end if
 	end if
 	!Shin Experiment
-	if (doShin .eq. 1) then
+	if (doShin) then
 		call calc_OBJPOT_shin
 	end if
 end subroutine

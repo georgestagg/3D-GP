@@ -20,8 +20,9 @@ subroutine iterate (rt)
 			GRID = GRID*sqrt(DSPACE*DSPACE*NX*NY)
 		end if
 		if (RHSType .eq. 1) then
+			OLDNORM = NORM
 			call calc_norm
-			GRID = GRID/sqrt(NORM)
+			GRID = GRID*OLDNORM/NORM
 		end if
 	end if
 end subroutine
@@ -63,7 +64,7 @@ subroutine rhs (gt, kk)
 			end do
 		end do
 	end if
-	if(GAMMAC > 0.0d0) then
+	if(DBLE(GAMMAC) > 0.0d0) then
 		kk=kk/(EYE-GAMMAC)	!Damping
 	else
 		kk = kk/EYE !No damping
