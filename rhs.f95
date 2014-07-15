@@ -6,11 +6,18 @@ subroutine iterate (rt)
 	implicit none
 	integer :: rt
 	complex*16, dimension(-NX/2:NX/2,-NY/2:NY/2) :: k1,k2,k3,k4
+	double precision :: energy
 
-	call rhs(GRID, k1)
-	call rhs(GRID + 0.5d0*DT*k1,k2)
-	call rhs(GRID + 0.5d0*DT*k2,k3)
-	call rhs(GRID + DT*k3,k4)
+	if (rt == 0) then
+		call calc_norm
+		!write(6,*) NORM
+		OLDNORM = NORM
+	end if
+
+	call rhs(GRID, k1,rt)
+	call rhs(GRID + 0.5d0*DT*k1,k2,rt)
+	call rhs(GRID + 0.5d0*DT*k2,k3,rt)
+	call rhs(GRID + DT*k3,k4,rt)
 	GRID = GRID + DT*(k1 + 2.0d0*k2 + 2.0d0*k3 + k4)/6.0d0
 
 	if (rt == 0) then
@@ -21,8 +28,10 @@ subroutine iterate (rt)
 		end if
 		if (RHSType .eq. 1) then
 			call calc_norm
-			GRID = GRID*OLDNORM/NORM
-			OLDNORM = NORM
+			!GRID = GRID*SQRT(OLDNORM)/SQRT(NORM)
+			GRID = GRID/sqrt(NORM)
+			!call calc_energy(energy)
+			!WRITE(6,*) energy
 		end if
 	end if
 end subroutine
@@ -30,11 +39,11 @@ end subroutine
 
 !Homogeneous Dimentionless - With Ramping!
 
-subroutine rhs (gt, kk)
+subroutine rhs (gt, kk,rt)
 	use params
 
 	implicit none
-	integer :: i,j,BC
+	integer :: i,j,BC,rt
 	complex*16, dimension(-NX/2:NX/2,-NY/2:NY/2) :: gt, kk
 	kk=0
 	if(RHSType .eq. 0) then
@@ -64,7 +73,7 @@ subroutine rhs (gt, kk)
 			end do
 		end do
 	end if
-	if(DBLE(GAMMAC) > 0.0d0) then
+	if(DBLE(GAMMAC) > 0.0d0 .and. (rt .eq. 1)) then
 		kk=kk/(EYE-GAMMAC)	!Damping
 	else
 		kk = kk/EYE !No damping

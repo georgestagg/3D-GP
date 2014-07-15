@@ -13,9 +13,6 @@ program gp
 		DT = -EYE*DTSIZE
 		call calc_OBJPOT
 		call approx
-			!Get a NORMOLD
-			call calc_norm
-			OLDNORM = NORM
 		write(fname, '(a,i0)') 'utils.',LOOPNO
 		open (8, FILE = fname)
 		!!!!!!!!!!!!
