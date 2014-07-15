@@ -79,11 +79,15 @@ integer function BC(s,n)
 	BC=s
 	select case (n)
     	case (0)
-    		if(s.eq.NX/2+1)BC=NX/2
-    		if(s.eq.-NX/2-1)BC=-NX/2
+    		if(s.eq.NX/2+1  .and. BCX.eq.0)BC=NX/2
+				if(s.eq.NX/2+1  .and. BCX.eq.1)BC=-NX/2
+    		if(s.eq.-NX/2-1 .and. BCX.eq.0)BC=-NX/2
+				if(s.eq.-NX/2-1 .and. BCX.eq.1)BC=NX/2
     	case (1)
-    		if(s.eq.NY/2+1)BC=NY/2
-    		if(s.eq.-NY/2-1)BC=-NY/2
+    		if(s.eq.NY/2+1  .and. BCY.eq.0)BC=NY/2
+				if(s.eq.NY/2+1  .and. BCY.eq.1)BC=-NY/2
+    		if(s.eq.-NY/2-1 .and. BCY.eq.0)BC=-NY/2
+				if(s.eq.-NY/2-1 .and. BCY.eq.1)BC=NY/2
 	end select
 end function
 !!!!!!!!!!!!!!!!!!!!!!!!!!

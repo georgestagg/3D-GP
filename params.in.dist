@@ -21,6 +21,10 @@ integer,parameter :: NX = 1024
 integer,parameter :: NY = 512
 double precision :: DSPACE = 0.4d0, DTSIZE = 0.01d0
 
+!Boundary Conditions - 0 reflective - 1 periodic
+integer,parameter :: BCX = 0
+integer,parameter :: BCY = 0
+
 !Flow Speed in X Dir
 integer :: VOBS = 35, VOBE = 35, VOBST = 1
 
