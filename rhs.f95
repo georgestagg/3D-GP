@@ -20,8 +20,9 @@ subroutine iterate (rt)
 			GRID = GRID*sqrt(DSPACE*DSPACE*NX*NY)
 		end if
 		if (RHSType .eq. 1) then
+			OLDNORM = NORM
 			call calc_norm
-			GRID = GRID/sqrt(NORM)
+			GRID = GRID*OLDNORM/NORM
 		end if
 	end if
 end subroutine

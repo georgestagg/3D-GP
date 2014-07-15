@@ -19,7 +19,7 @@ integer :: dumpd = 1000000, dumpwf = 100, dumputil = 10000
 !GPE Type - 0 Natural Units - 1 Hamonic Oscillator Units
 integer :: RHSType = 1
 double precision :: harm_osc_C = 100.0d0
-double precision :: harm_osc_mu = 33.0d0
+double precision :: harm_osc_mu = 5.64d0
 complex*16 :: GAMMAC = 0.0d0
 
 !Boundary Conditions - 0 reflective - 1 periodic
