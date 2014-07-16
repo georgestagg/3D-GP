@@ -28,7 +28,7 @@ subroutine iterate (rt)
 		end if
 		if (RHSType .eq. 1) then
 			call calc_norm
-			!GRID = GRID*SQRT(OLDNORM)/SQRT(NORM)
+			!GRID = GRID*NORM/OLNORM
 			GRID = GRID/sqrt(NORM)
 			!call calc_energy(energy)
 			!WRITE(6,*) energy
@@ -78,7 +78,6 @@ subroutine rhs (gt, kk,rt)
 	else
 		kk = kk/EYE !No damping
 	end if
-
 end subroutine
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 

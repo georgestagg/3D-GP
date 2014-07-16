@@ -102,7 +102,7 @@ subroutine calc_OBJPOT_shin
 	!Section 4 - Ramping down laser beam
 	if(TIME .gt. TTM) then
 		if (enablePot) then
-			OBJHEIGHT  = OBJHEIGHT  - ((DT*15*71.678)/(2.0*PI*15.0*0.4))
+			OBJHEIGHT  = OBJHEIGHT  - ((DT*15*harm_osc_mu)/(2.0*PI*15.0*0.4))
 			if(OBJHEIGHT .gt. 0.0d0) then
 				call calc_OBJPOT_obj
 			end if
