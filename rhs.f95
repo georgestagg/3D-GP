@@ -9,9 +9,9 @@ subroutine iterate (rt)
 	double precision :: energy
 
 	if (rt == 0) then
-		call calc_norm
+		!call calc_norm
 		!write(6,*) NORM
-		OLDNORM = NORM
+		!OLDNORM = NORM
 	end if
 
 	call rhs(GRID, k1,rt)
