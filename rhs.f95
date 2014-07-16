@@ -4,13 +4,13 @@ subroutine iterate (rt)
 	use params
 
 	implicit none
-	integer :: rt
+	integer :: rt,BC
 	complex*16, dimension(-NX/2:NX/2,-NY/2:NY/2) :: k1,k2,k3,k4
 	double precision :: energy
 
 	if (rt == 0) then
-		!call calc_norm
-		!write(6,*) NORM
+		call calc_norm
+		write(6,*) NORM
 		!OLDNORM = NORM
 	end if
 
@@ -30,6 +30,12 @@ subroutine iterate (rt)
 			call calc_norm
 			!GRID = GRID*NORM/OLNORM
 			GRID = GRID/sqrt(NORM)
+
+			!harm_osc_mu = (0.5d0*(4.0d0*GRID(BC(0,0),BC(0,1))- GRID(BC(0,0),BC(0+1,1))&
+			!					-GRID(BC(0,0),BC(0-1,1))-GRID(BC(0+1,0),BC(0,1))&
+			!					-GRID(BC(0-1,0),BC(0,1)))/(DSPACE**2.0d0)&	!laplacian
+			!					+harm_osc_C*GRID(0,0)*GRID(0,0)*CONJG(GRID(0,0))&	!Nonlinear
+			!					+OBJPOT(0,0)*GRID(0,0))/GRID(0,0)
 			!call calc_energy(energy)
 			!WRITE(6,*) energy
 		end if
@@ -73,7 +79,7 @@ subroutine rhs (gt, kk,rt)
 			end do
 		end do
 	end if
-	if(DBLE(GAMMAC) > 0.0d0 .and. (rt .eq. 1)) then
+	if(DBLE(GAMMAC) > 0.0d0) then
 		kk=kk/(EYE-GAMMAC)	!Damping
 	else
 		kk = kk/EYE !No damping

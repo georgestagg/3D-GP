@@ -67,9 +67,3 @@ double precision :: xi1 = 0.066d0
 double precision :: afmXScale=0.035d0
 double precision :: afmYscale=1.0d0
 double precision :: TRUNCPARAM = 1.0d0
-
-!Vortex Imprinting
-logical :: enableVortexIm = .true.
-integer, parameter :: nVortex = 1
-integer :: VortexXLOC(nVortex) = (/ 0 /)
-integer :: VortexYLOC(nVortex) = (/ 0 /)
