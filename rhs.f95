@@ -9,9 +9,8 @@ subroutine iterate (rt)
 	double precision :: energy
 
 	if (rt == 0) then
-		call calc_norm
-		write(6,*) NORM
-		!OLDNORM = NORM
+		!call calc_norm
+		!write(6,*) NORM
 	end if
 
 	call rhs(GRID, k1,rt)
@@ -20,7 +19,7 @@ subroutine iterate (rt)
 	call rhs(GRID + DT*k3,k4,rt)
 	GRID = GRID + DT*(k1 + 2.0d0*k2 + 2.0d0*k3 + k4)/6.0d0
 
-	if (rt == 0) then
+	if (rt == 0 .or. rtNorm == .true.) then
 		if (RHSType .eq. 0) then
 			call calc_norm
 			GRID = GRID/sqrt(NORM)
@@ -28,16 +27,7 @@ subroutine iterate (rt)
 		end if
 		if (RHSType .eq. 1) then
 			call calc_norm
-			!GRID = GRID*NORM/OLNORM
 			GRID = GRID/sqrt(NORM)
-
-			!harm_osc_mu = (0.5d0*(4.0d0*GRID(BC(0,0),BC(0,1))- GRID(BC(0,0),BC(0+1,1))&
-			!					-GRID(BC(0,0),BC(0-1,1))-GRID(BC(0+1,0),BC(0,1))&
-			!					-GRID(BC(0-1,0),BC(0,1)))/(DSPACE**2.0d0)&	!laplacian
-			!					+harm_osc_C*GRID(0,0)*GRID(0,0)*CONJG(GRID(0,0))&	!Nonlinear
-			!					+OBJPOT(0,0)*GRID(0,0))/GRID(0,0)
-			!call calc_energy(energy)
-			!WRITE(6,*) energy
 		end if
 	end if
 end subroutine
