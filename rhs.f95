@@ -19,7 +19,7 @@ subroutine iterate (rt)
 	call rhs(GRID + DT*k3,k4,rt)
 	GRID = GRID + DT*(k1 + 2.0d0*k2 + 2.0d0*k3 + k4)/6.0d0
 
-	if (rt == 0 .or. rtNorm == .true.) then
+	if (rt == 0 .or. rtNorm) then
 		if (RHSType .eq. 0) then
 			call calc_norm
 			GRID = GRID/sqrt(NORM)
