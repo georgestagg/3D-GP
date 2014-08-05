@@ -1,9 +1,9 @@
 program gp
 	use params
-
 	implicit none
 	character(len=80) fname
 	double precision :: ret
+	CALL init_params
 
 	do LOOPNO = VOBS,VOBE,VOBST
 		!Initialise
@@ -82,7 +82,7 @@ subroutine dump_density (II)
 	double precision, dimension(-NX/2:NX/2,-NY/2:NY/2) :: phase,velx,vely
 	call calc_phase(phase)
 	call velxy(phase,velx,vely)
-	write(fname, '(i0,a,i0.4)') LOOPNO,'plot.',II/dumpd
+	write(fname, '(i0.4,a,i0.4)') LOOPNO,'.dump.',II/dumpd
 	open (7, FILE = fname)
 	do i = -NX/2, NX/2
 		do j = -NY/2, NY/2
@@ -100,7 +100,7 @@ subroutine dump_wavefunction (II)
 	implicit none
 	integer :: II,i,j
 	character(len=80) fname
-	write(fname, '(i0,a,i0.4)') LOOPNO,'plotwf.',II/dumpwf
+	write(fname, '(i0.4,a,i0.4)') LOOPNO,'.dumpwf.',II/dumpwf
 	open (7, FILE = fname)
 	do i = -NX/2, NX/2
 		do j = -NY/2, NY/2
