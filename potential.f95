@@ -189,7 +189,7 @@ subroutine calc_OBJPOT_afm
 	double precision :: di,dj,ity,xtt,ytt,ztt
 	double precision, dimension(afmRES) :: xdat,ydat
 	double precision, dimension(afmRES,afmRES) :: ydatb
-	open (unit = 5, file = afm_filename)
+	open (unit = 5, file = TRIM(afm_filename))
 
 	do j = 1,afmRES
 	do i = 1,afmRES

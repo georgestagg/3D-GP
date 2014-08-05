@@ -3,7 +3,7 @@ FC = gfortran
 
 FCFLAGS = -O3
 
-LDFLAGS = 
+LDFLAGS =
 
 PROGRAMS = gp
 

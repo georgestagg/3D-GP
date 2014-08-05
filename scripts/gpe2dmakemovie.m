@@ -28,7 +28,7 @@ function gpe2dmakemovie(dirarg,startno,stride,endno,speed,nx,ny)
         end
         axis([-20 20 -20 20]);
         axis off
-        curtime = num2str(roundn(((i*40)*0.0005)/(15*2*pi)*1000,-1));
+        curtime = num2str(roundn((i*200*0.0005)/(15*2*pi)*1000,-1));
         text(0,-18,strcat('\color{white}',curtime,' ms'),'FontSize',16,'HorizontalAlignment','center')
         filename = strcat(pngfolder, '/p%04d.png');
         finalfname = sprintf(filename,round(j));
