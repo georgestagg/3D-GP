@@ -1,4 +1,7 @@
+!Enter custom parameters in the form
+!PARAMETER_NAME = VALUE
+!
 NX = 128
 NY = 128
-GAMMAC = 0.5d0
-rtNorm = .true.
+BCX = 1
+BCY = 1
