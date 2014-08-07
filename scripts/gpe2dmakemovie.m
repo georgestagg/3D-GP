@@ -1,5 +1,5 @@
 function gpe2dmakemovie(dirarg,startno,stride,endno,speed,nx,ny)
-    dirarg = regexprep(dirarg, '/$', ''); 
+    dirarg = regexprep(dirarg, '/$', '');
     pngfolder = strcat(dirarg, '/png');
     mkdir(pngfolder);
     for i=startno:stride:endno
