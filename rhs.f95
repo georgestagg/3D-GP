@@ -46,13 +46,13 @@ subroutine rhs (gt, kk,rt)
 		do i = -NX/2,NX/2
 			do j = -NY/2,NY/2
 				kk(i,j) = 0.5d0*(4.0d0*gt(BC(i,0),BC(j,1))- gt(BC(i,0),BC(j+1,1))&
-									-gt(BC(i,0),BC(j-1,1))-gt(BC(i+1,0),BC(j,1))&
-									-gt(BC(i-1,0),BC(j,1)))/(DSPACE**2.0d0)&	!laplacian
-									+gt(i,j)*gt(i,j)*CONJG(gt(i,j))&	!Nonlinear
-						 			-gt(i,j)&	!Chemical Potential
-									+OBJPOT(i,j)*gt(i,j)&	!Obstacle potential
-									+tanh(TIME/200.0d0)*VOB*EYE*(gt(BC(i+1,0),BC(j,1))&
-									-gt(BC(i-1,0),BC(j,1)))/(2.0d0*DSPACE)	!Moving frame
+						-gt(BC(i,0),BC(j-1,1))-gt(BC(i+1,0),BC(j,1))&
+						-gt(BC(i-1,0),BC(j,1)))/(DSPACE**2.0d0)&	!laplacian
+						+gt(i,j)*gt(i,j)*CONJG(gt(i,j))&	!Nonlinear
+			 			-gt(i,j)&	!Chemical Potential
+						+OBJPOT(i,j)*gt(i,j)&	!Obstacle potential
+						+tanh(TIME/200.0d0)*VOB*EYE*(gt(BC(i+1,0),BC(j,1))&
+						-gt(BC(i-1,0),BC(j,1)))/(2.0d0*DSPACE)	!Moving frame
 			end do
 		end do
 	end if
@@ -61,11 +61,11 @@ subroutine rhs (gt, kk,rt)
 		do i = -NX/2,NX/2
 			do j = -NY/2,NY/2
 				kk(i,j) = 0.5d0*(4.0d0*gt(BC(i,0),BC(j,1))- gt(BC(i,0),BC(j+1,1))&
-									-gt(BC(i,0),BC(j-1,1))-gt(BC(i+1,0),BC(j,1))&
-									-gt(BC(i-1,0),BC(j,1)))/(DSPACE**2.0d0)&	!laplacian
-									+harm_osc_C*gt(i,j)*gt(i,j)*CONJG(gt(i,j))&	!Nonlinear
-						 			+OBJPOT(i,j)*gt(i,j)&	!potential
-									- harm_osc_mu*gt(i,j)	!Chemical Potential
+						-gt(BC(i,0),BC(j-1,1))-gt(BC(i+1,0),BC(j,1))&
+						-gt(BC(i-1,0),BC(j,1)))/(DSPACE**2.0d0)&	!laplacian
+						+harm_osc_C*gt(i,j)*gt(i,j)*CONJG(gt(i,j))&	!Nonlinear
+			 			+OBJPOT(i,j)*gt(i,j)&	!potential
+						- harm_osc_mu*gt(i,j)	!Chemical Potential
 			end do
 		end do
 	end if
