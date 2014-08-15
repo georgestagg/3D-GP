@@ -147,7 +147,7 @@ Column 1 | Column 2 | Column 3 | Column 4 | Column 5
 
 The fluid force and energy are calculated by default every 100 time steps. If rotating or oscillating obstacles are used it my be useful to increase the `dumputil` frequency.  
 
-The solver will also output a file, named `utils.vvvv` (Here `vvvv` is the current obstacle speed, *v*, multiplied by 100), output at the same frequency.
+The solver will also output a file, named `utils.vvvv` (Here `vvvv` is the current obstacle speed, *v*, multiplied by 100), outputting at the same frequency.
 This file is in the following format:
 
 Column 1 | Column 2 | Column 3 | Column 4
