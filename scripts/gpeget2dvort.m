@@ -2,7 +2,7 @@ function [xlocs,ylocs,pol] = gpeget2dvort(dens,phase,gridx,gridy,potential)
 xlocs=[];
 ylocs=[];
 pol=[];
-TFradius = 9.5;
+TFradius = 10.5;
 TFpot = (TFradius*TFradius)/2;
 [comx,comy] = gpegetcenterofmass(dens,gridx,gridy);
 
@@ -39,22 +39,28 @@ for j = 2:dims(2)-1
 end
 end
 
-%for i = 6:dims(1)-6
-%for j = 6:dims(2)-6
-%        if((sqrt(velx(i,j).^2+vely(i,j).^2)>2.0) && sqrt((gridx(j)-comx).^2+(gridy(i)-comy).^2)<TFradius && potential(i,j)<40)
-%            presort(i,j)=LINEINTVF(velx,vely,i,i+5,j,j+5);
-%        end
-%end
-%end
-
-
-for i = 6:3:dims(1)-6
-for j = 6:3:dims(2)-6
-        if(sqrt((gridx(j)-comx).^2+(gridy(i)-comy).^2)<TFradius && potential(i,j)<30)
+for i = 6:dims(1)-6
+for j = 6:dims(2)-6
+        if(sqrt((gridx(j)-comx).^2+(gridy(i)-comy).^2)<TFradius)
             presort(i,j)=LINEINTVF(velx,vely,i,i+5,j,j+5);
+            if(sqrt((gridx(j)-comx).^2+(gridy(i)-comy).^2)<TFradius/1.2 && potential(i,j)>45)
+                presort(i,j) = 0;
+            end
         end
 end
 end
+
+
+%for i = 6:3:dims(1)-6
+%for j = 6:3:dims(2)-6
+%        if(sqrt((gridx(j)-comx).^2+(gridy(i)-comy).^2)<TFradius)
+%            presort(i,j)=LINEINTVF(velx,vely,i,i+3,j,j+3);
+%            if(sqrt((gridx(j)-comx).^2+(gridy(i)-comy).^2)<TFradius/1.2 && potential(i,j)>30)
+%                presort(i,j) = 0;
+%            end
+%        end
+%end
+%end
 
 %densblob=dens>0.002;
   
@@ -65,12 +71,12 @@ end
 %imagesc(dens)
 %imagesc(potential)
 
-h = fspecial('gaussian', size(presort), 0.5);
+h = fspecial('gaussian', size(presort), 1.0);
 presort = imfilter(presort, h);
 %imagesc(presort);
 
-negareas = bwlabel(presort>0.5);
-posareas = bwlabel(presort<-0.5);
+negareas = bwlabel(presort>0.50);
+posareas = bwlabel(presort<-0.50);
 
 for i = 1:max(max(posareas))
     [r,c] = find(posareas== i);
