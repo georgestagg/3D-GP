@@ -7,7 +7,8 @@
 
 * Run `./install` to setup. You can also run  `./install <install-dir>` to install to any desired installation location.
 
-* New terminals should now be able to run  `make2dgp` anywhere.
+* New terminals should now be able to run  `make2dgp` anywhere.  
+*NOTE: OS X not working at the moment.
 
 ### Running a Simulation
 * Create a new simulation directory
