@@ -190,7 +190,6 @@ subroutine calc_OBJPOT_afm
 	double precision, dimension(afmRES) :: xdat,ydat
 	double precision, dimension(afmRES,afmRES) :: ydatb
 	open (unit = 5, file = TRIM(afm_filename))
-
 	do j = 1,afmRES
 	do i = 1,afmRES
 		read (5,*) xtt,ytt,ztt
@@ -199,7 +198,6 @@ subroutine calc_OBJPOT_afm
 	end do
 	end do
 	ydat = ydatb(afmSlice,:)
-	WRITE(6,*)MINVAL(ydat(3:afmRES-3))
 	ydat = ydat - MINVAL(ydat(3:afmRES-3)) - (NY/2)*DSPACE
 	ydat = ydat*afmYscale
 	OBJPOT = 0.0d0
@@ -218,8 +216,9 @@ subroutine calc_OBJPOT_afm
 		end do
 	end do
 	close(5)
-
+	
 	OBJPOT(:,-NY/2+NINT(NY/TRUNCPARAM):NY/2) = 0.0d0
+	
 end subroutine
 
 

@@ -2,7 +2,7 @@ function [xlocs,ylocs,pol] = gpeget2dvort(dens,phase,gridx,gridy,potential)
 xlocs=[];
 ylocs=[];
 pol=[];
-TFradius = 10.5;
+TFradius = 10;
 TFpot = (TFradius*TFradius)/2;
 [comx,comy] = gpegetcenterofmass(dens,gridx,gridy);
 
@@ -39,11 +39,11 @@ for j = 2:dims(2)-1
 end
 end
 
-for i = 6:dims(1)-6
-for j = 6:dims(2)-6
+for i = 6:3:dims(1)-6
+for j = 6:3:dims(2)-6
         if(sqrt((gridx(j)-comx).^2+(gridy(i)-comy).^2)<TFradius)
             presort(i,j)=LINEINTVF(velx,vely,i,i+5,j,j+5);
-            if(sqrt((gridx(j)-comx).^2+(gridy(i)-comy).^2)<TFradius/1.2 && potential(i,j)>45)
+            if(sqrt(gridx(j).^2+gridy(i).^2)<5 && potential(i,j)>40)
                 presort(i,j) = 0;
             end
         end
@@ -71,7 +71,7 @@ end
 %imagesc(dens)
 %imagesc(potential)
 
-h = fspecial('gaussian', size(presort), 1.0);
+h = fspecial('gaussian', size(presort), 0.5);
 presort = imfilter(presort, h);
 %imagesc(presort);
 
@@ -95,6 +95,9 @@ for i = 1:max(max(negareas))
         pol = [pol,-1];
     end
 end
+
+xlocs = xlocs - comx;
+ylocs = ylocs - comy;
 
 function ret = LINEINTVF(fieldx,fieldy,x,ex,y,ey)
 	l1=0.0d0;
