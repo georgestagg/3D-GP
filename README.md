@@ -243,6 +243,14 @@ Parameter | Default | Explanation
 `afmYscale`|`1`| Scale the data in the *y* direction by this value
 `TRUNCPARAM` | `1`| Truncate the data at this amount (in units of the maximum point)
 
+=======
+###Bitmap Sourced Potential
+2D-GP supports the loading of bitmap images which can then be used to define a potential. To use this feature first create a grayscale bitmap of size (`NX`+1) by (`NY`+1). White areas correspond to areas where the potential will be high, while black areas correspond to areas where the potential will be 0. Grayscale colours will cause the potential to scale between 0 and `OBJHEIGHT`.
+
+Parameter | Default | Explanation
+--- | --- | ---
+`pot_filename`|` `| Location of the potential bmp image
+
 #Example `params.in`
 
 An example (and default) `params.in` is provided by 2D-GP, and looks like this:
