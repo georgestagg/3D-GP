@@ -167,7 +167,7 @@ Parameter | Default | Explanation
 --- | --- | ---
 `enablePot` | `.true.` | Enable the potential term in the GPE globally.
 `enableTrap` | `.false.` | Enable the potential trap.
-`potType` | `-1` | Obstacle type - Set to `-1` for no obstacle, `0` for a fixed Gaussian "laser beam", `1` for a freely rotating Gaussian obstacle, `2` for an oscillating Gaussian obstacle, or `3` for a heightmap potential.
+`potType` | `-1` | Obstacle type - Set to `-1` for no obstacle, `0` for a fixed Gaussian "laser beam", `1` for a freely rotating Gaussian obstacle, `2` for an oscillating Gaussian obstacle, `3` for a heightmap potential or `4` for a bitmap sourced potential.
 `potRep` | `0` | Set to `0` to calculate the potential once (for fixed potentials). Set to `1` if the potential varies in time and must be recalculated at every time step.
 ---
 
@@ -242,6 +242,13 @@ Parameter | Default | Explanation
 `afmXScale`|`0.035`| Scale the data in the *x* direction by this value
 `afmYscale`|`1`| Scale the data in the *y* direction by this value
 `TRUNCPARAM` | `1`| Truncate the data at this amount (in units of the maximum point)
+
+###Bitmap Sourced Potential
+2D-GP supports the loading of bitmap images which can then be used to define a potential. To use this feature first create a grayscale bitmap of size (`NX`+1) by (`NY`+1). White areas correspond to areas where the potential will be high, while black areas correspond to areas where the potential will be 0. Grayscale colours will cause the potential to scale between 0 and `OBJHEIGHT`.
+
+Parameter | Default | Explanation
+--- | --- | ---
+`pot_filename`|` `| Location of the AFM data
 
 #Example `params.in`
 
