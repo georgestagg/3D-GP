@@ -2,3 +2,5 @@ params.in
 makemovie.sh
 .nfs*
 tmp*
+*~
+~/*~
