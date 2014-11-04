@@ -166,7 +166,7 @@ The potential must be globally enabled before enabling the trap or obstacle.
 Parameter | Default | Explanation
 --- | --- | ---
 `enablePot` | `.true.` | Enable the potential term in the GPE globally.
-`enableTrap` | `.true.` | Enable the potential trap.
+`enableTrap` | `.false.` | Enable the potential trap.
 `potType` | `-1` | Obstacle type - Set to `-1` for no obstacle, `0` for a fixed Gaussian "laser beam", `1` for a freely rotating Gaussian obstacle, `2` for an oscillating Gaussian obstacle, or `3` for a heightmap potential.
 `potRep` | `0` | Set to `0` to calculate the potential once (for fixed potentials). Set to `1` if the potential varies in time and must be recalculated at every time step.
 ---

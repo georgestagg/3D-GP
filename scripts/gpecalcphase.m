@@ -3,7 +3,7 @@ function phase = gpecalcphase(psi)
 rpsi = real(psi);
 ipsi = imag(psi);
 
-phase = atan2(ipsi./(abs(rpsi)+1e-16));
+phase = atan2(ipsi,rpsi);
 
 if(rpsi < 0)
 if(ipsi > 0)

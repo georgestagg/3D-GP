@@ -28,10 +28,11 @@ module params
 
   !Flow Speed in X Dir - Start End Stride
   integer :: VOBS = 0, VOBE = 0, VOBST = 1
-
+  double precision :: VOBSCALE = 100.0
+  
   !Potential types - 0 object - 1 free rotational obj - 2 oscillating obj - 3 afm-img
   logical :: enablePot = .true.
-  logical :: enableTrap = .true.
+  logical :: enableTrap = .false.
   integer :: potType = -1
   !Enable if you need to constantly recalculate the potential
   integer :: potRep = 0
@@ -64,6 +65,11 @@ module params
   double precision :: afmXScale=0.035d0
   double precision :: afmYscale=1.0d0
   double precision :: TRUNCPARAM = 1.0d0
+
+  !pot-image
+  character(2048) :: pot_filename
+
+
   !GLOBALS----------------------------------------------------------------------
   double precision :: VOB
   integer :: LOOPNO=5
@@ -79,6 +85,7 @@ contains
   SUBROUTINE init_params
     IMPLICIT NONE
     afm_filename = repeat(" ", 2048) !Clear memory so entire string is blank
+    pot_filename = repeat(" ", 2048) !Clear memory so entire string is blank
     include 'params.in'
     ALLOCATE(GRID(-NX/2:NX/2,-NY/2:NY/2))
     ALLOCATE(OBJPOT(-NX/2:NX/2,-NY/2:NY/2))

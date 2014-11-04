@@ -9,7 +9,7 @@ program gp
 		!Initialise
 		GRID = 0
 		TIME = 0.0d0
-		VOB = DBLE(LOOPNO)/100.0d0
+		VOB = DBLE(LOOPNO)/VOBSCALE
 		DT = -EYE*DTSIZE
 		call calc_OBJPOT
 		call approx

@@ -4,16 +4,25 @@ function gpe2dmakemovie(dirarg,startno,stride,endno,speed,nx,ny)
     mkdir(pngfolder);
     for i=startno:stride:endno
         [gridx,gridy,dens,phase,potential] = gpeget2dWF(dirarg,i,speed,nx,ny);
-        [xlocs,ylocs,pol] = gpeget2dvort_homg(dens,phase,gridx,gridy,potential);
+        %[xlocs,ylocs,pol] = gpeget2dvort_homg(dens,phase,gridx,gridy,potential);
         fprintf('read %d\n',i);
         j = i/stride;
         h=figure('visible','off');
-        imagesc(gridx(1:nx+1),gridy(1:ny+1)+100,dens);
-        colormap(gray);
+        imagesc(gridx(1:nx+1),gridy(1:ny+1),dens);
+        %colormap(hot);
+        
+        x=linspace(0,1,128);
+        r = sqrt(x);
+        g = x.^3.0;
+        b=sin(x*2*pi);
+        b(b<0)=0;
+        pm3d7515_bbry=[r;g;b]';
+        colormap(pm3d7515_bbry);
+        caxis([0,1])
         axis image;
         axis xy;
         hold on;
-        g = gscatter(xlocs,ylocs+100,pol,['b','r'],['^','o'],5,'off');
+        %g = gscatter(xlocs,ylocs-gridy(1),pol,['b','r'],['^','o'],5,'off');
         if(length(g)==1)
 	 set(g(1), 'MarkerFaceColor', 'r')
          set(g(1),'Marker','o');
@@ -26,8 +35,8 @@ function gpe2dmakemovie(dirarg,startno,stride,endno,speed,nx,ny)
 	  set(g(2), 'MarkerFaceColor', 'r')
     end
         xlabel('x/\xi', 'FontSize',16);
-        ylabel('z/\xi', 'FontSize',16);
-        axis([-200 200 0 200]);
+        ylabel('y/\xi', 'FontSize',16);
+        axis([gridx(1) gridx(nx+1) gridy(1) gridy(ny+1)]);
         filename = strcat(pngfolder, '/p%04d.png');
         finalfname = sprintf(filename,j);
         print (h,'-dpng','-r150',finalfname);

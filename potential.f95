@@ -3,6 +3,7 @@ subroutine calc_OBJPOT
 	implicit none
 	integer :: i,j
 	OBJPOT = 0.0d0
+
 	!Normal potential and Trap
 	if (.NOT. doShin) then
 		if (enablePot) then
@@ -17,6 +18,9 @@ subroutine calc_OBJPOT
 			end if
 			if(potType .eq. 3) then
 				call calc_OBJPOT_afm
+			end if
+			if(potType .eq. 4) then
+				call calc_OBJPOT_img
 			end if
 		end if
 		if (enableTrap) then
@@ -219,6 +223,20 @@ subroutine calc_OBJPOT_afm
 	
 	OBJPOT(:,-NY/2+NINT(NY/TRUNCPARAM):NY/2) = 0.0d0
 	
+end subroutine
+
+subroutine calc_OBJPOT_img
+	use params
+	use bitmap
+	implicit none
+	integer :: i,j,obj
+	
+	CALL load_bmp
+	do i = -NX/2,NX/2
+		do j = -NY/2,NY/2
+			OBJPOT(i,j) = OBJHEIGHT*(Img(i,j)/255)
+		end do
+	end do
 end subroutine
 
 
