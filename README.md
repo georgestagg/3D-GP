@@ -248,7 +248,7 @@ Parameter | Default | Explanation
 
 Parameter | Default | Explanation
 --- | --- | ---
-`pot_filename`|` `| Location of the AFM data
+`pot_filename`|` `| Location of the potential bmp image
 
 #Example `params.in`
 
