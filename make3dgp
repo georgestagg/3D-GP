@@ -4,13 +4,13 @@
 
 #Take care of any params.in changes
 if [ -a params.in ]; then
-	cp params.in $GP2DSOURCELOC
+	cp params.in $GP3DSOURCELOC
 else
-	cp $GP2DSOURCELOC/params.in.dist $GP2DSOURCELOC/params.in
+	cp $GP3DSOURCELOC/params.in.dist $GP3DSOURCELOC/params.in
 fi
 #Change to code dir
 origdir=${PWD}
-pushd $GP2DSOURCELOC
+pushd $GP3DSOURCELOC
 #Compile.
 make
 #Setup dir

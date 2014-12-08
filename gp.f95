@@ -5,23 +5,22 @@ program gp
 	double precision :: ret
 	CALL init_params
 
-	do LOOPNO = VOBS,VOBE,VOBST
-		!Initialise
-		GRID = 0
-		TIME = 0.0d0
-		VOB = DBLE(LOOPNO)/VOBSCALE
-		DT = -EYE*DTSIZE
-		call calc_OBJPOT
-		call approx
-		write(fname, '(a,i0)') 'utils.',LOOPNO
-		open (8, FILE = fname)
-		!!!!!!!!!!!!
-		call runit(ISTEPS,0,0)
-		DT = DTSIZE
-		call add_noise
-		call runit(NSTEPS,1,1)
-		close(8)
-	end do
+	!Initialise
+	GRID = 0
+	TIME = 0.0d0
+	VOB = DBLE(VOBS)/VOBSCALE
+	DT = -EYE*DTSIZE
+	call calc_OBJPOT
+	call approx
+	write(fname, '(a,i0)') 'utils.',VOBS
+	open (8, FILE = fname)
+	!Iterate
+	call runit(ISTEPS,0,0)
+	DT = DTSIZE
+	call add_noise
+	call runit(NSTEPS,1,1)
+	close(8)
+
 end PROGRAM gp
 
 subroutine runit(steps,rt,plot)
@@ -45,19 +44,12 @@ subroutine runit(steps,rt,plot)
 			open (10, FILE = "STATUS")
 			if (rt == 1) then
 					write (unit=10,fmt="(a,i3,a,f6.2,a)")&
-						"Simulating: ",LOOPNO, ":     ",(dble(i)/dble(steps))*100.0d0,"%"
+						"Simulating: ",VOBS, ":     ",(dble(i)/dble(steps))*100.0d0,"%"
 				else
 					write (unit=10,fmt="(a,i3,a,f6.2,a)")&
-						"Ground State: ",LOOPNO, ":     " ,(dble(i)/dble(steps))*100.0d0,"%"
+						"Ground State: ",VOBS, ":     " ,(dble(i)/dble(steps))*100.0d0,"%"
 			end if
 			close(10)
-		end if
-		if (modulo(i,dumpd) == 0) then
-			if (rt == 1) then
-				if (plot == 1) then
-					call dump_density(i)
-				end if
-			end if
 		end if
 		if (modulo(i,dumpwf) == 0) then
 			if (rt == 1) then
@@ -72,41 +64,21 @@ subroutine runit(steps,rt,plot)
 	end do
 end subroutine
 
-
-
-subroutine dump_density (II)
-	use params
-	implicit none
-	integer :: II,i,j
-	character(len=80) fname
-	double precision, dimension(-NX/2:NX/2,-NY/2:NY/2) :: phase,velx,vely
-	call calc_phase(phase)
-	call velxy(phase,velx,vely)
-	write(fname, '(i0.4,a,i0.4)') LOOPNO,'.dump.',II/dumpd
-	open (7, FILE = fname)
-	do i = -NX/2, NX/2
-		do j = -NY/2, NY/2
-			write (unit=7,fmt="(f10.2,f10.2,2F20.16)")&
-				dble(i*DSPACE),dble(j*DSPACE),dble(GRID(i,j)*CONJG(GRID(i,j))),&
-				SQRT((velx(i,j)**2.0d0)+(vely(i,j)**2.0d0))
-		end do
-		write (unit=7,fmt="(a)") " "
-	end do
-	close(7)
-end subroutine
-
 subroutine dump_wavefunction (II)
 	use params
 	implicit none
-	integer :: II,i,j
+	integer :: II,i,j,k
 	character(len=80) fname
-	write(fname, '(i0.4,a,i0.4)') LOOPNO,'.dumpwf.',II/dumpwf
+	write(fname, '(i0.4,a,i0.4)') VOBS,'.dumpwf.',II/dumpwf
 	open (7, FILE = fname)
 	do i = -NX/2, NX/2
 		do j = -NY/2, NY/2
-			write (unit=7,fmt="(f10.2,f10.2,3F20.10)")&
-				dble(i*DSPACE),dble(j*DSPACE),dble(GRID(i,j)),&
-				aimag(GRID(i,j)),DBLE(OBJPOT(i,j))
+			do k = -NZ/2, NZ/2
+			write (unit=7,fmt="(3f10.2,3F20.10)")&
+				dble(i*DSPACE),dble(j*DSPACE),dble(k*DSPACE),dble(GRID(i,j,j)),&
+				aimag(GRID(i,j,j)),DBLE(OBJPOT(i,j,j))
+			end do
+			write (unit=7,fmt="(a)") " "
 		end do
 		write (unit=7,fmt="(a)") " "
 	end do

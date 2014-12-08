@@ -1,8 +1,9 @@
 !Enter custom parameters in the form
 !PARAMETER_NAME = VALUE
 !
-NX = 128
-NY = 128
+NX = 64
+NY = 64
+NZ = 64
 BCX = 1
 BCY = 1
-
+BCZ = 1
