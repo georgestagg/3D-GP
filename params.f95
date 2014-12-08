@@ -8,15 +8,15 @@ module params
   integer :: NX = 64
   integer :: NY = 64
   integer :: NZ = 64
-  double precision :: DSPACE = 0.5d0, DTSIZE = 0.01d0
-
+  double precision :: DSPACE = 0.2d0, DTSIZE = 0.01d0
+  
   !Dump frequency - Wavefunction - Misc Utils
   integer :: dumpwf = 100, dumputil = 100
 
   !GPE Type - 0 Natural Units - 1 Hamonic Oscillator Units
   integer :: RHSType = 1
-  double precision :: harm_osc_C = 100.0d0
-  double precision :: harm_osc_mu = 5.64d0
+  double precision :: harm_osc_C = 300.0d0
+  double precision :: harm_osc_mu = 10.136d0
   complex*16 :: GAMMAC = 0.0d0
   logical :: rtNorm = .false.
 
