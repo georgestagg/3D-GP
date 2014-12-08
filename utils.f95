@@ -135,3 +135,33 @@ subroutine calc_energy(energy)
 	end do
 	energy = energy*DSPACE*DSPACE*DSPACE
 end subroutine
+
+subroutine insert_vortex_line(xloc,yloc,zloc,rot,circ,dtheta)
+	use params
+	implicit none
+	integer :: i,j,k,rot,circ
+	double precision :: xloc,yloc,zloc,dtheta,rs
+	double precision, dimension(-NX/2:NX/2,-NY/2:NY/2,-NZ/2:NZ/2) :: R
+	complex*16, dimension(-NX/2:NX/2,-NY/2:NY/2,-NZ/2:NZ/2) :: phse
+
+	do i = -NX/2, NX/2
+		do j = -NY/2, NY/2
+			do k = -NZ/2, NZ/2
+				if (rot .eq. 0) then
+					rs=(i*DSPACE)*(i*DSPACE) + (j*DSPACE)*(j*DSPACE);
+					phse(i,j,k) = exp(EYE*(ATAN2((j*DSPACE),(i*DSPACE)) + dtheta*(k*DSPACE)));
+				end if
+				if (rot .eq. 1) then
+					rs=(i*DSPACE)*(i*DSPACE) + (k*DSPACE)*(k*DSPACE);
+					phse(i,j,k) = exp(EYE*(ATAN2((k*DSPACE),(i*DSPACE)) + dtheta*(j*DSPACE)));
+				end if
+				if (rot .eq. 2) then
+					rs=(j*DSPACE)*(j*DSPACE) + (k*DSPACE)*(k*DSPACE);
+					phse(i,j,k) = exp(EYE*(ATAN2((k*DSPACE),(j*DSPACE)) + dtheta*(i*DSPACE)));
+				end if
+				R(i,j,k) = sqrt(rs*(0.3437+0.0286*rs)/(1+0.3333*rs+0.0286*rs*rs)); 
+			end do
+		end do
+	end do
+	GRID = GRID*R*phse;
+end subroutine

@@ -16,6 +16,9 @@ program gp
 	open (8, FILE = fname)
 	!Iterate
 	call runit(ISTEPS,0,0)
+	write(6,*) "Inserting vortex lines"
+	call insert_vortex_line(0.0,0.0,0.0,0,0,0.0)
+	call runit(100,0,0)
 	DT = DTSIZE
 	call add_noise
 	call runit(NSTEPS,1,1)
@@ -75,8 +78,8 @@ subroutine dump_wavefunction (II)
 		do j = -NY/2, NY/2
 			do k = -NZ/2, NZ/2
 			write (unit=7,fmt="(3f10.2,3F20.10)")&
-				dble(i*DSPACE),dble(j*DSPACE),dble(k*DSPACE),dble(GRID(i,j,j)),&
-				aimag(GRID(i,j,j)),DBLE(OBJPOT(i,j,j))
+				dble(i*DSPACE),dble(j*DSPACE),dble(k*DSPACE),dble(GRID(i,j,k)),&
+				aimag(GRID(i,j,k)),DBLE(OBJPOT(i,j,k))
 			end do
 			write (unit=7,fmt="(a)") " "
 		end do
