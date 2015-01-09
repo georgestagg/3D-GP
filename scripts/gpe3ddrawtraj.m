@@ -2,8 +2,8 @@ function gpe3ddrawtraj(gridx,gridy,gridz,phase)
 
 [mgx,mgy,mgz,velx,vely,velz] = gpe3dvelocity(gridx,gridy,gridz,phase);
 
-partx = [1];
-party = [1];
+partx = [0.5];
+party = [0.5];
 partz = [0];
 
 for n=2:10000

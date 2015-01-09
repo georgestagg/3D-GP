@@ -85,9 +85,7 @@ subroutine calc_OBJPOT_afm
 					dj = ydat(afmRES-3)
 				end if
 
-				CALL interp3D(di,dj,xdat,ydat,hdat,ith)
-
-				if(dk < ith) then
+				if(dk < hdat(2*i+afmRES/2,2*j+afmRES/2)) then
 					OBJPOT(i,j,k) = OBJHEIGHT
 				end if
 

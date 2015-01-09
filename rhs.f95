@@ -24,6 +24,9 @@ subroutine iterate (rt)
 			GRID = GRID/sqrt(NORM)
 		end if
 	end if
+	if(rt .eq. 1 .and. abs(DVDT) > 0.0d0) then
+		VOB = VOB + DVDT
+	end if
 end subroutine
 !!!!!!!!!!!!!!!!!!!!!!!
 

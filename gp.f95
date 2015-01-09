@@ -16,9 +16,12 @@ program gp
 	open (8, FILE = fname)
 	!Iterate
 	call runit(ISTEPS,0,0)
-	write(6,*) "Inserting vortex lines"
-	call insert_vortex_line(0.0,0.0,0.0,0,0,0.0)
-	call runit(100,0,0)
+	!write(6,*) "Inserting vortex lines"
+	!call insert_vortex_line(0.0,0.0,0.0,2,0,0.0d0)
+	!call insert_vortex_line(0.0,0.0,0.0,2,0,2.0d0*PI/(NX*DSPACE))
+	call insert_vortex_ring(0.0d0,0.0d0,0.0d0,5.0d0,1.0d0,0.0d0,0.0d0,1.0d0,1.0d0,0.0d0)
+	!call insert_vortex_ring(0,0,0,1.0,1,0,0,1,1,2pi over the circ)
+	!call runit(2000,0,0)
 	DT = DTSIZE
 	call add_noise
 	call runit(NSTEPS,1,1)
@@ -67,23 +70,34 @@ subroutine runit(steps,rt,plot)
 	end do
 end subroutine
 
+!subroutine dump_wavefunction (II)
+!	use params
+!	implicit none
+!	integer :: II,i,j,k
+!	character(len=80) fname
+!	write(fname, '(i0.4,a,i0.4)') VOBS,'.dumpwf.',II/dumpwf
+!	open (7, FILE = fname)
+!	do i = -NX/2, NX/2
+!		do j = -NY/2, NY/2
+!			do k = -NZ/2, NZ/2
+!			write (unit=7,fmt="(3f10.2,3F20.10)")&
+!				dble(i*DSPACE),dble(j*DSPACE),dble(k*DSPACE),dble(GRID(i,j,k)),&
+!				aimag(GRID(i,j,k)),DBLE(OBJPOT(i,j,k))
+!			end do
+!			write (unit=7,fmt="(a)") " "
+!		end do
+!		write (unit=7,fmt="(a)") " "
+!	end do
+!	close(7)
+!end subroutine
+
 subroutine dump_wavefunction (II)
 	use params
+	use output
 	implicit none
 	integer :: II,i,j,k
 	character(len=80) fname
 	write(fname, '(i0.4,a,i0.4)') VOBS,'.dumpwf.',II/dumpwf
-	open (7, FILE = fname)
-	do i = -NX/2, NX/2
-		do j = -NY/2, NY/2
-			do k = -NZ/2, NZ/2
-			write (unit=7,fmt="(3f10.2,3F20.10)")&
-				dble(i*DSPACE),dble(j*DSPACE),dble(k*DSPACE),dble(GRID(i,j,k)),&
-				aimag(GRID(i,j,k)),DBLE(OBJPOT(i,j,k))
-			end do
-			write (unit=7,fmt="(a)") " "
-		end do
-		write (unit=7,fmt="(a)") " "
-	end do
-	close(7)
-end subroutine
+	call make_file(fname)
+	call write_wf_file
+	end subroutine

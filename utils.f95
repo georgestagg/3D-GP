@@ -43,7 +43,7 @@ subroutine calc_norm
 	integer :: i,j
 	double precision :: int_grid_3D
 	NORM=int_grid_3D(DBLE(GRID*CONJG(GRID)))
-	write(6,*)NORM
+	!write(6,*)NORM
 end subroutine
 
 function int_grid_3D(intThing)
@@ -149,19 +149,62 @@ subroutine insert_vortex_line(xloc,yloc,zloc,rot,circ,dtheta)
 			do k = -NZ/2, NZ/2
 				if (rot .eq. 0) then
 					rs=(i*DSPACE)*(i*DSPACE) + (j*DSPACE)*(j*DSPACE);
-					phse(i,j,k) = exp(EYE*(ATAN2((j*DSPACE),(i*DSPACE)) + dtheta*(k*DSPACE)));
+					phse(i,j,k) = exp(EYE*(ATAN2((j*DSPACE),(i*DSPACE)) + dtheta*(k*DSPACE)))
 				end if
 				if (rot .eq. 1) then
-					rs=(i*DSPACE)*(i*DSPACE) + (k*DSPACE)*(k*DSPACE);
-					phse(i,j,k) = exp(EYE*(ATAN2((k*DSPACE),(i*DSPACE)) + dtheta*(j*DSPACE)));
+					rs=(i*DSPACE)*(i*DSPACE) + (k*DSPACE)*(k*DSPACE)
+					phse(i,j,k) = exp(EYE*(ATAN2((k*DSPACE),(i*DSPACE)) + dtheta*(j*DSPACE)))
 				end if
 				if (rot .eq. 2) then
-					rs=(j*DSPACE)*(j*DSPACE) + (k*DSPACE)*(k*DSPACE);
-					phse(i,j,k) = exp(EYE*(ATAN2((k*DSPACE),(j*DSPACE)) + dtheta*(i*DSPACE)));
+					rs=(j*DSPACE)*(j*DSPACE) + (k*DSPACE)*(k*DSPACE)
+					phse(i,j,k) = exp(EYE*(ATAN2((k*DSPACE),(j*DSPACE)) + dtheta*(i*DSPACE)))
 				end if
 				R(i,j,k) = sqrt(rs*(0.3437+0.0286*rs)/(1+0.3333*rs+0.0286*rs*rs)); 
 			end do
 		end do
 	end do
 	GRID = GRID*R*phse;
+end subroutine
+
+subroutine insert_vortex_ring(xloc,yloc,zloc,rad,dir,amp1,amp2,kk,ll,dtheta)
+	use params
+	implicit none
+	integer :: i,j,k
+	double precision :: xloc,yloc,zloc,rad,dir,amp1,amp2,kk,ll,dtheta
+	complex*16, dimension(-NX/2:NX/2,-NY/2:NY/2,-NZ/2:NZ/2) :: vortex_ring
+	double precision, dimension(-NX/2:NX/2,-NY/2:NY/2,-NZ/2:NZ/2) :: rr1,rr2,d1,d2,pp
+	double precision, dimension(-NX/2:NX/2,-NY/2:NY/2) :: s,theta,dist
+	
+	do j=-NY/2, NY/2
+		do i=-NX/2, NX/2
+			theta(i,j) = atan2((j*DSPACE)-yloc,(i*DSPACE)-xloc)
+			s(i,j) = sqrt(((i*DSPACE)-xloc)**2 + ((j*DSPACE)-yloc)**2) - amp1*sin(kk*theta(i,j))
+		end do
+	end do
+
+	dist = amp2*cos(ll*theta)
+
+	do k=-NZ/2, NZ/2
+		do j=-NY/2, NY/2
+			do i=-NX/2, NX/2
+			pp(i,j,k) = (k*DSPACE) - amp1*cos(kk*theta(i,j))
+			d1(i,j,k) = sqrt( ((pp(i,j,k)-zloc))**2 + ((s(i,j)+rad-dist(i,j)))**2 )
+			d2(i,j,k) = sqrt( ((pp(i,j,k)-zloc))**2 + ((s(i,j)-rad-dist(i,j)))**2 )
+			end do
+		end do
+	end do
+	rr1 = sqrt( ((0.3437d0+0.0286d0*d1**2)) / (1.0+(0.3333d0*d1**2)+(0.0286d0*d1**4)) )
+ 	rr2 = sqrt( ((0.3437d0+0.0286d0*d2**2)) / (1.0+(0.3333d0*d2**2)+(0.0286d0*d2**4)) )
+
+	do k=-NZ/2, NZ/2
+		do j=-NY/2, NY/2
+			do i=-NX/2, NX/2
+			vortex_ring(i,j,k) = &
+			rr1(i,j,k)*(((pp(i,j,k)-zloc)) + dir*EYE*((s(i,j)+rad-dist(i,j)))) * &
+			rr2(i,j,k)*(((pp(i,j,k)-zloc)) - dir*EYE*((s(i,j)-rad-dist(i,j))))
+			end do
+		end do
+	end do
+
+	GRID = GRID*vortex_ring
 end subroutine
