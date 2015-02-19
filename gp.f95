@@ -14,14 +14,9 @@ program gp
 	call approx
 	write(fname, '(a,i0)') 'utils.',VOBS
 	open (8, FILE = fname)
-	!Iterate
 	call runit(ISTEPS,0,0)
-	!write(6,*) "Inserting vortex lines"
-	!call insert_vortex_line(0.0,0.0,0.0,2,0,0.0d0)
-	!call insert_vortex_line(0.0,0.0,0.0,2,0,2.0d0*PI/(NX*DSPACE))
-	call insert_vortex_ring(0.0d0,0.0d0,0.0d0,5.0d0,1.0d0,0.0d0,0.0d0,1.0d0,1.0d0,0.0d0)
-	!call insert_vortex_ring(0,0,0,1.0,1,0,0,1,1,2pi over the circ)
-	!call runit(2000,0,0)
+	include 'ic.in'
+	call runit(VSTEPS,0,0)
 	DT = DTSIZE
 	call add_noise
 	call runit(NSTEPS,1,1)

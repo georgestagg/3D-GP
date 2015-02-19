@@ -1,0 +1,25 @@
+!Enter initial conditions in the form
+!call IC(...)
+!
+!insert_vortex_line(xloc,yloc,zloc,circ,rot,amp1,amp2,kk,ll,k3,dtheta)
+!xloc, yloc, zloc -> location in space
+!circ -> +1 or -1 quantum of circulation
+!circ -> 0,1 or 2 orientation of vortex line
+!amp1,amp2 -> Amplitude of disturbances
+!kk,ll -> wavenumber of disturbances
+!k3 -> distance from origin disturbance applies
+!dtheta -> internal phase twist per pixel
+!
+!
+!
+!insert_vortex_ring(xloc,yloc,zloc,rad,dir,amp1,amp2,kk,ll,dtheta)
+!xloc, yloc, zloc -> location in space
+!rad -> ring radius
+!dir -> +1 or -1 quantum of circulation
+!amp1,amp2 -> Amplitude of disturbances
+!kk,ll -> wavenumber of disturbances
+!dtheta -> internal phase twist per pixel
+
+
+call insert_vortex_line(0.0d0,0.0d0,0.0d0,1,0,1.0d0,1.0d0,5.0d0,5.0d0,5.0d0,0.0d0*PI/(NZ*DSPACE))
+	

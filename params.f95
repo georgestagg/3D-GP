@@ -3,6 +3,7 @@ module params
   !Iterations to run
   integer :: NSTEPS=10000
   integer :: ISTEPS=2000
+  integer :: VSTEPS=50
 
   !Resolution
   integer :: NX = 64

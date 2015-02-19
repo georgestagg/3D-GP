@@ -1,6 +1,4 @@
 function h = gpe3disosurface(gridx,gridy,gridz,dens,alphac)
-h=figure();
-clf;
 daspect([1,1,1])
 [X,Y,Z] = meshgrid(gridx,gridy,gridz);
 p = patch(isosurface(X,Y,Z,dens,0.1*max(max(max(dens)))));

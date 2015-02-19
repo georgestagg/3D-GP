@@ -136,11 +136,11 @@ subroutine calc_energy(energy)
 	energy = energy*DSPACE*DSPACE*DSPACE
 end subroutine
 
-subroutine insert_vortex_line(xloc,yloc,zloc,rot,circ,dtheta)
+subroutine insert_vortex_line(xloc,yloc,zloc,circ,rot,amp1,amp2,kk,ll,k3,dtheta)
 	use params
 	implicit none
 	integer :: i,j,k,rot,circ
-	double precision :: xloc,yloc,zloc,dtheta,rs
+	double precision :: xloc,yloc,zloc,amp1,amp2,kk,ll,dtheta,rs,xx,yy,zz,cd,sd,k3
 	double precision, dimension(-NX/2:NX/2,-NY/2:NY/2,-NZ/2:NZ/2) :: R
 	complex*16, dimension(-NX/2:NX/2,-NY/2:NY/2,-NZ/2:NZ/2) :: phse
 
@@ -148,17 +148,29 @@ subroutine insert_vortex_line(xloc,yloc,zloc,rot,circ,dtheta)
 		do j = -NY/2, NY/2
 			do k = -NZ/2, NZ/2
 				if (rot .eq. 0) then
-					rs=(i*DSPACE)*(i*DSPACE) + (j*DSPACE)*(j*DSPACE);
-					phse(i,j,k) = exp(EYE*(ATAN2((j*DSPACE),(i*DSPACE)) + dtheta*(k*DSPACE)))
+					xx = (i*DSPACE) - xloc
+					yy = (j*DSPACE) - yloc
+					zz = (k*DSPACE) - zloc
+				else if (rot .eq. 1) then
+					yy = (i*DSPACE) - xloc
+					zz = (j*DSPACE) - yloc
+					xx = (k*DSPACE) - zloc
+				else if (rot .eq. 2) then
+					zz = (i*DSPACE) - xloc
+					xx = (j*DSPACE) - yloc
+					yy = (k*DSPACE) - zloc
 				end if
-				if (rot .eq. 1) then
-					rs=(i*DSPACE)*(i*DSPACE) + (k*DSPACE)*(k*DSPACE)
-					phse(i,j,k) = exp(EYE*(ATAN2((k*DSPACE),(i*DSPACE)) + dtheta*(j*DSPACE)))
+				if(abs(zz) < k3) then
+					cd = amp1*cos(2.0d0*PI*zz/kk)
+					sd = amp2*sin(2.0d0*PI*zz/ll)
+				else
+					cd = 0
+					sd = 0
 				end if
-				if (rot .eq. 2) then
-					rs=(j*DSPACE)*(j*DSPACE) + (k*DSPACE)*(k*DSPACE)
-					phse(i,j,k) = exp(EYE*(ATAN2((k*DSPACE),(j*DSPACE)) + dtheta*(i*DSPACE)))
-				end if
+				!if (rot .eq. 0) then
+					rs=(xx-sd)**2.0d0 + (yy-cd)**2.0d0;
+					phse(i,j,k) = exp(EYE*(ATAN2(yy-cd,xx-sd) + dtheta*zz))
+				!end if
 				R(i,j,k) = sqrt(rs*(0.3437+0.0286*rs)/(1+0.3333*rs+0.0286*rs*rs)); 
 			end do
 		end do
