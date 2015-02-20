@@ -38,6 +38,7 @@ module params
   logical :: enablePot = .true.
   logical :: enableTrap = .true.
   integer :: potType = -1
+  integer :: trapType = 0 !traptype 0: harmonic, 1: ring
   !Enable if you need to constantly recalculate the potential
   integer :: potRep = 0
 
@@ -53,6 +54,10 @@ module params
   double precision :: TXDASH=0.0d0
   double precision :: TYDASH=0.0d0
   double precision :: TZDASH=0.0d0
+  double precision :: TXSCALE = 1.0d0
+  double precision :: TYSCALE = 1.0d0
+  double precision :: TZSCALE = 1.0d0
+  double precision :: TR0 = 0.0d0
 
   !AFM-IMAGE
   character(2048) :: afm_filename

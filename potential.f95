@@ -17,16 +17,29 @@ subroutine calc_OBJPOT
 		end if
 	end if
 	if (enableTrap) then
+	if (trapType .eq. 0) then
 		do i = -NX/2,NX/2
 		do j = -NY/2,NY/2
 		do k = -NZ/2,NZ/2
 			OBJPOT(i,j,k) = OBJPOT(i,j,k)&
-				+0.5d0*((dble(i)*DSPACE+TXDASH)*(dble(i)*DSPACE+TXDASH)&
-				+(dble(j)*DSPACE+TYDASH)*(dble(j)*DSPACE+TYDASH)&
-				+(dble(k)*DSPACE+TZDASH)*(dble(k)*DSPACE+TZDASH))
+				+0.5d0*((TXSCALE*dble(i)*DSPACE+TXDASH)*(TXSCALE*dble(i)*DSPACE+TXDASH)&
+				+(TYSCALE*dble(j)*DSPACE+TYDASH)*(TYSCALE*dble(j)*DSPACE+TYDASH)&
+				+(TZSCALE*dble(k)*DSPACE+TZDASH)*(TZSCALE*dble(k)*DSPACE+TZDASH))
 		end do
 		end do
 		end do
+	else if (trapType .eq. 1) then
+        do i = -NX/2,NX/2
+        do j = -NY/2,NY/2
+        do k = -NZ/2,NZ/2 
+            OBJPOT(i,j,k) = OBJPOT(i,j,k)&
+               +0.5d0*((TXSCALE**2.0d0)*((sqrt((dble(i)*DSPACE+TXDASH)**2.0d0+(dble(j)*DSPACE+TYDASH)**2.0d0)-TR0)**2.0d0)&
+               +(TZSCALE**2.0d0)*((dble(k)*DSPACE+TXDASH)**2.0d0))
+        end do
+        end do
+        end do
+
+	end if
 	end if
 
 end subroutine
