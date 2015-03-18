@@ -40,6 +40,7 @@ subroutine rhs (gt, kk,rt)
 	complex*16, dimension(-NX/2:NX/2,-NY/2:NY/2,-NZ/2:NZ/2) :: gt, kk
 	kk=0
 	if(RHSType .eq. 0) then
+		!$OMP PARALLEL DO
 		do i = -NX/2,NX/2
 			do j = -NY/2,NY/2
 				do k = -NZ/2,NZ/2
@@ -50,14 +51,16 @@ subroutine rhs (gt, kk,rt)
 							+gt(i,j,k)*gt(i,j,k)*CONJG(gt(i,j,k))&	!Nonlinear
 					 		-gt(i,j,k)&	!Chemical Potential
 							+OBJPOT(i,j,k)*gt(i,j,k)&	!Obstacle potential
-							+tanh(TIME/200.0d0)*VOB*EYE*(gt(BC(i+1,0),BC(j,1),BC(k,2))&
+							+tanh(TIME/VTVTIME)*VOB*EYE*(gt(BC(i+1,0),BC(j,1),BC(k,2))&
 							-gt(BC(i-1,0),BC(j,1),BC(k,2)))/(2.0d0*DSPACE)	!Moving frame
 				end do
 			end do
 		end do
+		!$OMP END PARALLEL DO
 	end if
 !Harmonic Dimentionless
 	if(RHSType .eq. 1) then
+		!$OMP PARALLEL DO
 		do i = -NX/2,NX/2
 			do j = -NY/2,NY/2
 				do k = -NZ/2,NZ/2
@@ -71,6 +74,7 @@ subroutine rhs (gt, kk,rt)
 				end do
 			end do
 		end do
+		!$OMP END PARALLEL DO
 	end if
 	if(DBLE(GAMMAC) > 0.0d0) then
 		kk=kk/(EYE-GAMMAC)	!Damping

@@ -15,9 +15,13 @@ subroutine calc_OBJPOT
 		if(potType .eq. 4) then
 			call calc_OBJPOT_img
 		end if
+		if(potType .eq. 5) then
+			call calc_OBJPOT_obj_with_floor
+		end if
 	end if
 	if (enableTrap) then
 	if (trapType .eq. 0) then
+		!$OMP PARALLEL DO
 		do i = -NX/2,NX/2
 		do j = -NY/2,NY/2
 		do k = -NZ/2,NZ/2
@@ -28,7 +32,9 @@ subroutine calc_OBJPOT
 		end do
 		end do
 		end do
+		!$OMP END PARALLEL DO
 	else if (trapType .eq. 1) then
+		!$OMP PARALLEL DO
         do i = -NX/2,NX/2
         do j = -NY/2,NY/2
         do k = -NZ/2,NZ/2 
@@ -38,7 +44,7 @@ subroutine calc_OBJPOT
         end do
         end do
         end do
-
+        !$OMP END PARALLEL DO
 	end if
 	end if
 
@@ -49,6 +55,7 @@ subroutine calc_OBJPOT_obj
 	implicit none
 	integer :: i,j,k,obj
 	double precision :: rx,ry,rz,r2
+	!$OMP PARALLEL DO
 	do i = -NX/2,NX/2
 		do j = -NY/2,NY/2
 			do k = -NZ/2,NZ/2
@@ -62,6 +69,38 @@ subroutine calc_OBJPOT_obj
 			end do
 		end do
 	end do
+	!$OMP END PARALLEL DO
+end subroutine
+
+subroutine calc_OBJPOT_obj_with_floor
+	use params
+	implicit none
+	integer :: i,j,k,obj
+	double precision :: rx,ry,rz,r2
+	!$OMP PARALLEL DO
+	do i = -NX/2,NX/2
+		do j = -NY/2,NY/2
+			do k = -NZ/2,NZ/2
+				rx = (dble(i)*DSPACE)-OBJXDASH
+				ry = (dble(j)*DSPACE)-OBJYDASH
+				rz = (dble(k)*DSPACE)-OBJZDASH
+				OBJPOT(i,j,k) = OBJHEIGHT*&
+					EXP(-(1.0d0/RRX**2.0d0)*(rx**2.0d0)& 
+						-(1.0d0/RRY**2.0d0)*(ry**2.0d0)& 
+						-(1.0d0/RRZ**2.0d0)*(rz**2.0d0))
+			end do
+		end do
+	end do
+	!$OMP END PARALLEL DO
+	!$OMP PARALLEL DO
+	do i = -NX/2,NX/2
+		do j = -NY/2,NY/2
+			do k = -NZ/2,-NZ/2+10
+				OBJPOT(i,j,k) = OBJHEIGHT
+			end do
+		end do
+	end do
+	!$OMP END PARALLEL DO
 end subroutine
 
 subroutine calc_OBJPOT_afm
@@ -119,6 +158,7 @@ subroutine calc_OBJPOT_img
 	double precision :: gs
 	
 	CALL load_bmp
+	!$OMP PARALLEL DO
 	do i = -NX/2,NX/2
 		do j = -NY/2,NY/2
 			do k = -NZ/2,NZ/2
@@ -128,6 +168,7 @@ subroutine calc_OBJPOT_img
 			end do
 		end do
 	end do
+	!$OMP END PARALLEL DO
 end subroutine
 
 

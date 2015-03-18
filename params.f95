@@ -33,6 +33,7 @@ module params
   integer :: VOBS = 0
   double precision :: VOBSCALE = 100.0
   double precision :: DVDT = 0.0d0
+  double precision :: VTVTIME = 200.0d0
  
   !Potential types - -1 none - 0 object - 3 afm-img
   logical :: enablePot = .true.

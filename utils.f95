@@ -119,6 +119,7 @@ subroutine calc_energy(energy)
 	if(RHSType .eq. 1) then
 		gg=harm_osc_C
 	end if
+	!$OMP PARALLEL DO
 	do i = -NX/2+1, NX/2-1
 		do j = -NY/2+1, NY/2-1
 			do k = -NZ/2+1, NZ/2-1
@@ -133,6 +134,7 @@ subroutine calc_energy(energy)
 			end do
 		end do
 	end do
+	!$OMP END PARALLEL DO
 	energy = energy*DSPACE*DSPACE*DSPACE
 end subroutine
 
@@ -184,8 +186,10 @@ subroutine insert_vortex_ring(x0,y0,z0,r0,dir,rot)
 	double precision :: x0,y0,z0,r0,xx,yy,zz
 	complex*16, dimension(-NX/2:NX/2,-NY/2:NY/2,-NZ/2:NZ/2) :: vortex_ring
 	double precision, dimension(-NX/2:NX/2,-NY/2:NY/2,-NZ/2:NZ/2) :: rr1,rr2,d1,d2
-	double precision, dimension(-NX/2:NX/2,-NY/2:NY/2) :: s,theta,dist
+	double precision, dimension(:,:), ALLOCATABLE :: s
+
 	if (rot .eq. 0) then
+		ALLOCATE(s(-NX/2:NX/2,-NY/2:NY/2))
 		do j=-NY/2,NY/2
 		  do i=-NX/2,NX/2
 		  	xx = (i*DSPACE) - x0
@@ -194,6 +198,7 @@ subroutine insert_vortex_ring(x0,y0,z0,r0,dir,rot)
 		  end do
 		end do
 	else if (rot .eq. 1) then
+		ALLOCATE(s(-NZ/2:NZ/2,-NX/2:NX/2))
 		do i=-NX/2,NX/2
 		  do k=-NZ/2,NZ/2
 		  	yy = (i*DSPACE) - x0
@@ -202,6 +207,7 @@ subroutine insert_vortex_ring(x0,y0,z0,r0,dir,rot)
 		  end do
 		end do
 	else if (rot .eq. 2) then
+		ALLOCATE(s(-NY/2:NY/2,-NZ/2:NZ/2))
 		do k=-NZ/2,NZ/2
 		  do j=-NY/2,NY/2
 			xx = (j*DSPACE) - y0

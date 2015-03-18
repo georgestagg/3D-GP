@@ -7,8 +7,7 @@ function gpe3dmakemovie(dirarg,startno,stride,endno,speed)
         fprintf('read %d\n',i);
         j = i/stride -startno/stride;
         h=figure('visible','off');
-        gpe3disosurface(gridx,gridy,gridz,dens,0.9);
-        axis([-max(gridx) max(gridx) -max(gridy) max(gridy) -max(gridz/2) max(gridz/2)]);
+        gpe3disosurface(gridx,gridy,gridz,dens,0.5,'red',0.2);
         filename = strcat(pngfolder, '/p%04d.png');
         finalfname = sprintf(filename,j);
         print (h,'-dpng','-r150',finalfname);

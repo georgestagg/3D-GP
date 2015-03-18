@@ -1,9 +1,9 @@
 
 FC = gfortran
 
-FCFLAGS = -O3
+FCFLAGS = -O3 -fopenmp
 
-LDFLAGS = -I/usr/include/ -L/usr/lib/ -lnetcdff -lnetcdf
+LDFLAGS = -I/usr/include/ -L/usr/lib/
 
 PROGRAMS = gp
 
@@ -13,7 +13,7 @@ all: $(PROGRAMS)
 gp: params.o output.o bitmap.o utils.o rhs.o potential.o
 
 %: %.o
-	$(FC) $(FCFLAGS) -o $@ $^ $(LDFLAGS)
+	$(FC) $(FCFLAGS) -o $@ $^ -lnetcdff -lnetcdf
 
 %.o: %.f95
 	$(FC) $(FCFLAGS) -c $< $(LDFLAGS)
