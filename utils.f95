@@ -1,14 +1,37 @@
+subroutine init_RNG
+	use params
+	integer :: i, un, n, irand, istat
+	integer, allocatable :: seed(:)
+	call random_seed(size = n)
+	allocate(seed(n))
+	open(newunit=un, file="/dev/urandom", access="stream", &
+	form="unformatted", action="read", status="old", iostat=istat)
+	if (istat == 0) then
+		read(un) seed
+		close(un)
+	else
+		write (8, *) 'No /dev/urandom. Falling back to time as random seed'
+		do i = 1, n
+			call system_clock(seed(i))
+		end do
+	end if
+	write (8, *) 'Initialised RNG with seed: ', seed
+	call random_seed(put=seed)
+	flush(8)
+end subroutine
+
 subroutine add_noise
 	use params
 	implicit none
+	double precision :: rn1,rn2
 	integer :: i,j,k,seed
-	call SYSTEM_CLOCK(COUNT=seed)
-	call srand(seed)
+	call random_number(rn1)
+	call random_number(rn2)
 	do i = -NX/2, NX/2
 		do j = -NY/2, NY/2
 			do k = -NZ/2, NZ/2
-			GRID(i,j,k) = GRID(i,j,k) + GRID(i,j,k)*CMPLX((RAND()*noiseamp)&
-									-(noiseamp/2.0d0),(RAND()*noiseamp)-(noiseamp/2.0d0))
+			GRID(i,j,k) = GRID(i,j,k) + GRID(i,j,k)*CMPLX((rn1*noiseamp)&
+									-(noiseamp/2.0d0),(rn2*noiseamp)-(noiseamp/2.0d0))
 			end do
 		end do
 	end do
@@ -16,26 +39,86 @@ end subroutine
 
 
 !Approx - homogeneous!
-subroutine approx
+subroutine initCond
 	use params
 	implicit none
 	integer :: i,j,k
-	if (RHSType .eq. 0) then
-		GRID =  1.00d0
-	end if
-	if (RHSType .eq. 1) then
-		do i = -NX/2, NX/2
-			do j = -NY/2, NY/2
-				do k = -NZ/2, NZ/2
-					GRID(i,j,k) = (harm_osc_mu - OBJPOT(i,j,k))/harm_osc_C
-					if(DBLE(GRID(i,j,k)) < 0) GRID(i,j,k) = 0.0d0
+	if(initialCondType .eq. 0) then
+		if (RHSType .eq. 0) then
+			GRID =  1.00d0
+		end if
+		if (RHSType .eq. 1) then
+			do i = -NX/2, NX/2
+				do j = -NY/2, NY/2
+					do k = -NZ/2, NZ/2
+						GRID(i,j,k) = (harm_osc_mu - OBJPOT(i,j,k))/harm_osc_C
+						if(DBLE(GRID(i,j,k)) < 0) GRID(i,j,k) = 0.0d0
+					end do
 				end do
 			end do
-		end do
-		GRID = SQRT(GRID)
+			GRID = SQRT(GRID)
+		end if
+	else if(initialCondType .eq. 1) then
+		call makeRandomPhase
 	end if
 end subroutine
 !!!!!!!!!!!!!!!!!!!!!!
+
+subroutine makeRandomPhase
+	use params
+	implicit none
+	double precision :: phi, rand
+	complex*16, dimension(-NX/2:NX/2,-NY/2:NY/2,-NZ/2:NZ/2) :: a
+	integer :: i, j, k, ii2, jj2, kk2
+
+	call calc_rpKC_rpAMP
+
+	write (8, *) 'Complex amplitude=', rpAMP
+	write (8, *) 'Cutoff wavenumber=', rpKC
+	flush(8)
+
+	do k=-NZ/2,NZ/2
+		if (k <= 0) then
+			kk2 = k**2
+		else
+			kk2 = (NZ/2-k+1)**2
+		end if
+		do j=-NY/2,NY/2
+			if (j <= 0) then
+				jj2 = j**2
+			else
+				jj2 = (NY/2-j+1)**2
+			end if
+			do i=-NX/2,NX/2
+				if (i <= 0) then
+					ii2 = i**2
+				else
+					ii2 = (NX/2-i+1)**2
+				end if
+				if ((ii2 + jj2 + kk2) <= rpKC) then
+					call random_number(phi)
+					a(i,j,k) = rpAMP*exp(2.0*PI*EYE*phi)
+				else
+					a(i,j,k) = 0.0d0
+				end if
+			end do
+		end do
+	end do
+
+	call fft(a, GRID, 'backward')
+
+end subroutine
+
+subroutine calc_rpKC_rpAMP
+	use params
+	implicit none
+	double precision :: ev
+	ev = ((0.5*NX/PI)**2.0)*ENERV
+	rpAMP = sqrt(((0.11095279993106999d0*NV**2.5d0)*(NX*NY*NZ)) / (ev**1.5d0))
+	rpKC = (1.666666666666666d0*ev)/NV
+end subroutine
+
+
 
 subroutine calc_norm
 	use params
@@ -59,7 +142,7 @@ function int_grid_3D(intThing)
 		l = k + NZ/2
 		if(modulo(l,2) == 0) then
 			b = 2
-		else 
+		else
 			b = 4
 		end if
 		a(2) = a(2) + b*simpsons_int_grid(intThing(:,:,k))
@@ -169,10 +252,10 @@ subroutine insert_vortex_line(xloc,yloc,zloc,circ,rot,amp1,amp2,kk,ll,k3,dtheta)
 					cd = 0
 					sd = 0
 				end if
-				
+
 				rs=(xx-sd)**2.0d0 + (yy-cd)**2.0d0;
 				phse(i,j,k) = exp(circ*EYE*(ATAN2(yy-cd,xx-sd) + dtheta*zz))
-				R(i,j,k) = sqrt(rs*(0.3437+0.0286*rs)/(1+0.3333*rs+0.0286*rs*rs)); 
+				R(i,j,k) = sqrt(rs*(0.3437+0.0286*rs)/(1+0.3333*rs+0.0286*rs*rs));
 			end do
 		end do
 	end do
@@ -216,7 +299,7 @@ subroutine insert_vortex_ring(x0,y0,z0,r0,dir,rot)
 		  end do
 		end do
 	end if
- 
+
     do k=-NZ/2,NZ/2
       do j=-NY/2,NY/2
         do i=-NX/2,NX/2
@@ -226,24 +309,24 @@ subroutine insert_vortex_ring(x0,y0,z0,r0,dir,rot)
 			zz = (k*DSPACE) - z0
           else if (rot .eq. 1) then
             n=k
-          	m=i 
+          	m=i
 			zz = (j*DSPACE) - y0
           else if (rot .eq. 2) then
             n=j
             m=k
 			zz = (i*DSPACE) - x0
-          end if   
+          end if
           d1(i,j,k) = sqrt( (zz)**2 + (s(n,m)+r0)**2 )
           d2(i,j,k) = sqrt( (zz)**2 + (s(n,m)-r0)**2 )
         end do
       end do
     end do
- 
+
     rr1 = sqrt( ((0.3437d0+0.0286d0*d1**2)) / &
       (1.0d0+(0.3333d0*d1**2)+(0.0286d0*d1**4)) )
     rr2 = sqrt( ((0.3437d0+0.0286d0*d2**2)) / &
       (1.0d0+(0.3333d0*d2**2)+(0.0286d0*d2**4)) )
- 
+
     do k=-NZ/2,NZ/2
       do j=-NY/2,NY/2
         do i=-NX/2,NX/2
@@ -253,13 +336,13 @@ subroutine insert_vortex_ring(x0,y0,z0,r0,dir,rot)
 			zz = (k*DSPACE) - z0
           else if (rot .eq. 1) then
             n=k
-          	m=i 
+          	m=i
 			zz = (j*DSPACE) - y0
           else if (rot .eq. 2) then
             n=j
             m=k
 			zz = (i*DSPACE) - x0
-          end if   
+          end if
           vortex_ring(i,j,k) =  rr1(i,j,k)*(zz+dir*EYE*(s(n,m)+r0)) * &
                                 rr2(i,j,k)*(zz-dir*EYE*(s(n,m)-r0))
         end do
@@ -267,3 +350,37 @@ subroutine insert_vortex_ring(x0,y0,z0,r0,dir,rot)
     end do
 	GRID = GRID*vortex_ring
 end subroutine
+
+subroutine fft(in_var, out_var, dir)
+	! Calculate the FFT (or inverse) of a variable
+	use params
+	use omp_lib
+	use, intrinsic :: iso_c_binding
+	implicit none
+	include 'fftw3.f03'
+
+
+	complex*16, dimension(-NX/2:NX/2,-NY/2:NY/2,-NZ/2:NZ/2), intent(inout) :: in_var
+	complex*16, dimension(-NX/2:NX/2,-NY/2:NY/2,-NZ/2:NZ/2), intent(out) :: out_var
+	character(*), intent(in) :: dir
+	integer :: i, j, k
+	integer iret
+	integer*8 :: plan
+	call dfftw_init_threads(iret)
+	call dfftw_plan_with_nthreads(omp_get_max_threads())
+
+	select case (dir)
+	case ('forward')
+		call dfftw_plan_dft_3d(plan, NX+1, NY+1, NZ+1, in_var, out_var, FFTW_FORWARD, FFTW_ESTIMATE)
+	case ('backward')
+		call dfftw_plan_dft_3d(plan, NX+1, NY+1, NZ+1, in_var, out_var, FFTW_BACKWARD, FFTW_ESTIMATE)
+	case default
+		write(6,*) 'ERROR: Not a valid direction for FFT!'
+	end select
+
+	call dfftw_execute_dft(plan, in_var, out_var)
+	call dfftw_destroy_plan(plan)
+
+	! Renormalise
+	out_var = out_var / sqrt(dble((NX+1)*(NY+1)*(NZ+1)))
+end subroutine fft

@@ -1,6 +1,6 @@
 #!/bin/bash
 # Compile and set up the code ready to run in a separate directory
-# usage:  ./make2dgp 
+# usage:  ./make2dgp
 
 #Take care of any params.in changes
 if [ -a params.in ]; then
@@ -27,4 +27,4 @@ cp params.in ic.in $origdir
 make clean
 #go back
 popd
-chmod +x gp 
+chmod +x gp

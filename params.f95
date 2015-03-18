@@ -10,7 +10,7 @@ module params
   integer :: NY = 64
   integer :: NZ = 64
   double precision :: DSPACE = 0.2d0, DTSIZE = 0.01d0
-  
+
   !Dump frequency - Wavefunction - Misc Utils
   integer :: dumpwf = 100, dumputil = 100
 
@@ -34,7 +34,7 @@ module params
   double precision :: VOBSCALE = 100.0
   double precision :: DVDT = 0.0d0
   double precision :: VTVTIME = 200.0d0
- 
+
   !Potential types - -1 none - 0 object - 3 afm-img
   logical :: enablePot = .true.
   logical :: enableTrap = .true.
@@ -71,6 +71,12 @@ module params
   !pot-image
   character(2048) :: pot_filename
 
+  !Initial initial condition 0 - default, 1 - Non-equilibrium
+  integer :: initialCondType = 0
+
+  !Non-equilibrium initial condition
+  double precision :: ENERV = 0.75
+  double precision :: NV = 0.75
 
   !GLOBALS----------------------------------------------------------------------
   double precision :: VOB
@@ -78,7 +84,7 @@ module params
   complex*16 :: DT,EYE = (0.0d0,1.0d0)
   double precision :: NORM,OLDNORM = 1.0d0
   complex*16, dimension(:,:,:), ALLOCATABLE :: GRID,OBJPOT
-  double precision :: TIME
+  double precision :: TIME, rpKC, rpAMP
   double precision :: OBJXVEL = 0.0d0,OBJYVEL = 0.0d0,OBJZVEL = 0.0d0
 
 contains

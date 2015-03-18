@@ -4,16 +4,16 @@ program gp
 	character(len=80) fname
 	double precision :: ret
 	CALL init_params
-
+	write(fname, '(a,i0)') 'utils.',VOBS
+	open (8, FILE = fname)
+	CALL init_RNG
 	!Initialise
 	GRID = 0
 	TIME = 0.0d0
 	VOB = DBLE(VOBS)/VOBSCALE
 	DT = -EYE*DTSIZE
 	call calc_OBJPOT
-	call approx
-	write(fname, '(a,i0)') 'utils.',VOBS
-	open (8, FILE = fname)
+	call initCond
 	call runit(ISTEPS,0,0)
 	include 'ic.in'
 	call runit(VSTEPS,0,0)

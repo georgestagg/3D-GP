@@ -9,6 +9,9 @@ subroutine calc_OBJPOT
 		if(potType .eq. 0) then
 			call calc_OBJPOT_obj
 		end if
+		if(potType .eq. 6) then
+			call calc_OBJPOT_cyl
+		end if
 		if(potType .eq. 3) then
 			call calc_OBJPOT_afm
 		end if
@@ -37,7 +40,7 @@ subroutine calc_OBJPOT
 		!$OMP PARALLEL DO
         do i = -NX/2,NX/2
         do j = -NY/2,NY/2
-        do k = -NZ/2,NZ/2 
+        do k = -NZ/2,NZ/2
             OBJPOT(i,j,k) = OBJPOT(i,j,k)&
                +0.5d0*((TXSCALE**2.0d0)*((sqrt((dble(i)*DSPACE+TXDASH)**2.0d0+(dble(j)*DSPACE+TYDASH)**2.0d0)-TR0)**2.0d0)&
                +(TZSCALE**2.0d0)*((dble(k)*DSPACE+TXDASH)**2.0d0))
@@ -63,9 +66,29 @@ subroutine calc_OBJPOT_obj
 				ry = (dble(j)*DSPACE)-OBJYDASH
 				rz = (dble(k)*DSPACE)-OBJZDASH
 				OBJPOT(i,j,k) = OBJHEIGHT*&
-					EXP(-(1.0d0/RRX**2.0d0)*(rx**2.0d0)& 
-						-(1.0d0/RRY**2.0d0)*(ry**2.0d0)& 
+					EXP(-(1.0d0/RRX**2.0d0)*(rx**2.0d0)&
+						-(1.0d0/RRY**2.0d0)*(ry**2.0d0)&
 						-(1.0d0/RRZ**2.0d0)*(rz**2.0d0))
+			end do
+		end do
+	end do
+	!$OMP END PARALLEL DO
+end subroutine
+
+subroutine calc_OBJPOT_cyl
+	use params
+	implicit none
+	integer :: i,j,k,obj
+	double precision :: rx,ry,r2
+	!$OMP PARALLEL DO
+	do i = -NX/2,NX/2
+		do j = -NY/2,NY/2
+			do k = -NZ/2,NZ/2
+				rx = (dble(i)*DSPACE)-OBJXDASH
+				ry = (dble(j)*DSPACE)-OBJYDASH
+				OBJPOT(i,j,k) = OBJHEIGHT*&
+				EXP(-(1.0d0/RRX**2.0d0)*(rx**2.0d0)&
+				-(1.0d0/RRY**2.0d0)*(ry**2.0d0))
 			end do
 		end do
 	end do
@@ -85,8 +108,8 @@ subroutine calc_OBJPOT_obj_with_floor
 				ry = (dble(j)*DSPACE)-OBJYDASH
 				rz = (dble(k)*DSPACE)-OBJZDASH
 				OBJPOT(i,j,k) = OBJHEIGHT*&
-					EXP(-(1.0d0/RRX**2.0d0)*(rx**2.0d0)& 
-						-(1.0d0/RRY**2.0d0)*(ry**2.0d0)& 
+					EXP(-(1.0d0/RRX**2.0d0)*(rx**2.0d0)&
+						-(1.0d0/RRY**2.0d0)*(ry**2.0d0)&
 						-(1.0d0/RRZ**2.0d0)*(rz**2.0d0))
 			end do
 		end do
@@ -145,9 +168,9 @@ subroutine calc_OBJPOT_afm
 		end do
 	end do
 	close(5)
-	
+
 	OBJPOT(:,:,-NZ/2+NINT(NZ/TRUNCPARAM):NZ/2) = 0.0d0
-	
+
 end subroutine
 
 subroutine calc_OBJPOT_img
@@ -156,7 +179,7 @@ subroutine calc_OBJPOT_img
 	implicit none
 	integer :: i,j,k,obj
 	double precision :: gs
-	
+
 	CALL load_bmp
 	!$OMP PARALLEL DO
 	do i = -NX/2,NX/2
@@ -179,7 +202,7 @@ subroutine interp3D(xloc,yloc,xdat,ydat,hdat,reth)
 	double precision :: xloc,yloc,reth
 	double precision, dimension(afmRES) :: xdat,ydat
 	double precision, dimension(afmRES,afmRES) :: hdat
-	
+
 	!TODO: Finish
 	reth = iterC(0,0)
 end subroutine
