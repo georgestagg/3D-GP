@@ -79,21 +79,21 @@ subroutine makeRandomPhase
 
 	do k=-NZ/2,NZ/2
 		if (k <= 0) then
-			kk2 = k**2
+			kk2 = (NZ/2+k)**2
 		else
-			kk2 = (NZ/2-k+1)**2
+			kk2 = (-NZ/2+k)**2
 		end if
 		do j=-NY/2,NY/2
 			if (j <= 0) then
-				jj2 = j**2
+				jj2 = (NY/2+j)**2
 			else
-				jj2 = (NY/2-j+1)**2
+				jj2 = (-NY/2+j)**2
 			end if
 			do i=-NX/2,NX/2
 				if (i <= 0) then
-					ii2 = i**2
+					ii2 = (NX/2+i)**2
 				else
-					ii2 = (NX/2-i+1)**2
+					ii2 = (-NX/2+i)**2
 				end if
 				if ((ii2 + jj2 + kk2) <= rpKC) then
 					call random_number(phi)
@@ -185,7 +185,7 @@ subroutine calc_misc
 	implicit none
 	double precision :: energy
 	call calc_energy(energy)
-    write (unit=8,fmt="(f7.2,f15.8)") time,energy
+    write (unit=8,fmt="(f7.2,f16.8)") time,energy
     flush(8)
 end subroutine
 
@@ -194,31 +194,30 @@ subroutine calc_energy(energy)
 	implicit none
 	integer :: i,j,k
 	COMPLEX*16 :: uux,uuy,uuz,uu
-	double precision :: energy,gg
+	integer, external :: BC
+	double precision :: energy,ep1,ep2,gg
+	double precision :: int_grid_3D
+	double precision, dimension(-NX/2:NX/2,-NY/2:NY/2,-NZ/2:NZ/2) :: dpsi2
 	energy = 0.0d0
-	if(RHSType .eq. 0) then
-		gg=1.0d0
-	end if
+	gg=1.0d0
 	if(RHSType .eq. 1) then
 		gg=harm_osc_C
 	end if
 	!$OMP PARALLEL DO
-	do i = -NX/2+1, NX/2-1
-		do j = -NY/2+1, NY/2-1
-			do k = -NZ/2+1, NZ/2-1
-				uu=GRID(i,j,k)
-				uux=(GRID(i+1,j,k)-GRID(i-1,j,k))/(2.0d0*DSPACE)
-				uuy=(GRID(i,j+1,k)-GRID(i,j-1,k))/(2.0d0*DSPACE)
-				uuz=(GRID(i,j,k+1)-GRID(i,j,k-1))/(2.0d0*DSPACE)
-
-				energy = energy + 0.5d0*((uux*CONJG(uux))+(uuy*CONJG(uuy))+(uuz*CONJG(uuz))) &
-					+ 0.5d0*gg*uu*conjg(uu)*uu*conjg(uu)&
-					+ OBJPOT(i,j,k)*uu*conjg(uu)
+	do i = -NX/2, NX/2
+		do j = -NY/2, NY/2
+			do k = -NZ/2, NZ/2
+				uux=(GRID(BC(i+1,0),j,k)-GRID(BC(i-1,0),j,k))/(2.0d0*DSPACE)
+				uuy=(GRID(i,BC(j+1,1),k)-GRID(i,BC(j-1,1),k))/(2.0d0*DSPACE)
+				uuz=(GRID(i,j,BC(k+1,2))-GRID(i,j,BC(k-1,2)))/(2.0d0*DSPACE)
+				dpsi2(i,j,k) = dble(uux*conjg(uux) + uuy*conjg(uuy) + uuz*conjg(uuz))
 			end do
 		end do
 	end do
 	!$OMP END PARALLEL DO
-	energy = energy*DSPACE*DSPACE*DSPACE
+	ep1 = int_grid_3D(dpsi2)
+	ep2 = int_grid_3D(DBLE(GRID*CONJG(GRID)*GRID*CONJG(GRID)))
+	energy = 0.5d0*ep1 + 0.5d0*ep2
 end subroutine
 
 subroutine insert_vortex_line(xloc,yloc,zloc,circ,rot,amp1,amp2,kk,ll,k3,dtheta)
@@ -366,8 +365,8 @@ subroutine fft(in_var, out_var, dir)
 	integer :: i, j, k
 	integer iret
 	integer*8 :: plan
-	call dfftw_init_threads(iret)
-	call dfftw_plan_with_nthreads(omp_get_max_threads())
+	!call dfftw_init_threads(iret)
+	!call dfftw_plan_with_nthreads(omp_get_max_threads())
 
 	select case (dir)
 	case ('forward')

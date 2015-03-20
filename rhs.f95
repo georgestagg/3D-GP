@@ -39,6 +39,7 @@ subroutine rhs (gt, kk,rt)
 	integer :: i,j,k,BC,rt
 	complex*16, dimension(-NX/2:NX/2,-NY/2:NY/2,-NZ/2:NZ/2) :: gt, kk
 	kk=0
+!HOMG with chemical potential
 	if(RHSType .eq. 0) then
 		!$OMP PARALLEL DO
 		do i = -NX/2,NX/2

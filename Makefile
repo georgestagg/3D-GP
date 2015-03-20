@@ -1,18 +1,18 @@
 
 FC = gfortran
 
-FCFLAGS = -O3 -fcheck=all
+FCFLAGS = -O3 -fcheck=all -fopenmp
 
-LDFLAGS = -L/usr/local/lib/ -lfftw3_omp -lfftw3 -lm -lnetcdff -lnetcdf -lcurl -lhdf5 -lhdf5_hl -fopenmp 
+LDFLAGS = -L/usr/lib/ -L/usr/local/lib/ -lfftw3 -lm -lnetcdff -lnetcdf 
 
-LD_LIBRARY_PATH = -I/usr/local/include/
+LD_LIBRARY_PATH = -I/usr/local/include/ -I/usr/include/
 
 PROGRAMS = gp
 
 
 all: $(PROGRAMS)
 
-gp: params.o output.o bitmap.o utils.o rhs.o potential.o
+gp: params.o rhs.o output.o bitmap.o utils.o potential.o
 
 %: %.o
 	$(FC) $(FCFLAGS) -o $@ $^ $(LDFLAGS)
