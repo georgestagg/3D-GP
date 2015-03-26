@@ -34,9 +34,9 @@ end subroutine
 
 subroutine rhs (gt, kk,rt)
 	use params
-
 	implicit none
-	integer :: i,j,k,BC,rt
+	integer :: i,j,k,rt
+	complex*16 :: ddx,ddy,ddz,laplacian
 	complex*16, dimension(-NX/2:NX/2,-NY/2:NY/2,-NZ/2:NZ/2) :: gt, kk
 	kk=0
 !HOMG with chemical potential
@@ -45,15 +45,12 @@ subroutine rhs (gt, kk,rt)
 		do i = -NX/2,NX/2
 			do j = -NY/2,NY/2
 				do k = -NZ/2,NZ/2
-					kk(i,j,k) = 0.5d0*(6.0d0*gt(i,j,k)- gt(BC(i,0),BC(j+1,1),BC(k,2))&
-								-gt(BC(i,0),BC(j-1,1),BC(k,2))-gt(BC(i+1,0),BC(j,1),BC(k,2))&
-								-gt(BC(i-1,0),BC(j,1),BC(k,2))-gt(BC(i,0),BC(j,1),BC(k-1,2))&
-								-gt(BC(i,0),BC(j,1),BC(k+1,2)))/(DSPACE**2.0d0)&	!laplacian
+					kk(i,j,k) = -0.5d0*laplacian(gt,i,j,k)&	!laplacian
 							+gt(i,j,k)*gt(i,j,k)*CONJG(gt(i,j,k))&	!Nonlinear
 					 		-gt(i,j,k)&	!Chemical Potential
 							+OBJPOT(i,j,k)*gt(i,j,k)&	!Obstacle potential
-							+tanh(TIME/VTVTIME)*VOB*EYE*(gt(BC(i+1,0),BC(j,1),BC(k,2))&
-							-gt(BC(i-1,0),BC(j,1),BC(k,2)))/(2.0d0*DSPACE)	!Moving frame
+							+tanh(TIME/VTVTIME)*VOB*EYE*ddx(gt,i,j,k)&!Moving frame
+							+OMEGA*EYE*(i*DSPACE*ddy(gt,i,j,k)-j*DSPACE*ddx(gt,i,j,k))!Rotation
 				end do
 			end do
 		end do
@@ -65,10 +62,7 @@ subroutine rhs (gt, kk,rt)
 		do i = -NX/2,NX/2
 			do j = -NY/2,NY/2
 				do k = -NZ/2,NZ/2
-				kk(i,j,k) = 0.5d0*(6.0d0*gt(i,j,k)- gt(BC(i,0),BC(j+1,1),BC(k,2))&
-							-gt(BC(i,0),BC(j-1,1),BC(k,2))-gt(BC(i+1,0),BC(j,1),BC(k,2))&
-							-gt(BC(i-1,0),BC(j,1),BC(k,2))-gt(BC(i,0),BC(j,1),BC(k-1,2))&
-							-gt(BC(i,0),BC(j,1),BC(k+1,2)))/(DSPACE**2.0d0)&	!laplacian
+				kk(i,j,k) = -0.5d0*laplacian(gt,i,j,k)&	!laplacian
 						+harm_osc_C*gt(i,j,k)*gt(i,j,k)*CONJG(gt(i,j,k))&	!Nonlinear
 			 			+OBJPOT(i,j,k)*gt(i,j,k)&	!potential
 						- harm_osc_mu*gt(i,j,k)	!Chemical Potential
@@ -96,16 +90,68 @@ integer function BC(s,n)
 			if(s.eq.NX/2+1  .and. BCX.eq.1)BC=-NX/2
     		if(s.eq.-NX/2-1 .and. BCX.eq.0)BC=-NX/2
 			if(s.eq.-NX/2-1 .and. BCX.eq.1)BC=NX/2
+    		if(s.eq.NX/2+2  .and. BCX.eq.0)BC=NX/2-1
+			if(s.eq.NX/2+2  .and. BCX.eq.1)BC=-NX/2+1
+    		if(s.eq.-NX/2-2 .and. BCX.eq.0)BC=-NX/2+1
+			if(s.eq.-NX/2-2 .and. BCX.eq.1)BC=NX/2-1
     	case (1)
     		if(s.eq.NY/2+1  .and. BCY.eq.0)BC=NY/2
 			if(s.eq.NY/2+1  .and. BCY.eq.1)BC=-NY/2
     		if(s.eq.-NY/2-1 .and. BCY.eq.0)BC=-NY/2
 			if(s.eq.-NY/2-1 .and. BCY.eq.1)BC=NY/2
+			if(s.eq.NY/2+2  .and. BCY.eq.0)BC=NY/2-1
+			if(s.eq.NY/2+2  .and. BCY.eq.1)BC=-NY/2+1
+    		if(s.eq.-NY/2-2 .and. BCY.eq.0)BC=-NY/2+1
+			if(s.eq.-NY/2-2 .and. BCY.eq.1)BC=NY/2-1
     	case (2)
     		if(s.eq.NZ/2+1  .and. BCZ.eq.0)BC=NZ/2
 			if(s.eq.NZ/2+1  .and. BCZ.eq.1)BC=-NZ/2
     		if(s.eq.-NZ/2-1 .and. BCZ.eq.0)BC=-NZ/2
 			if(s.eq.-NZ/2-1 .and. BCZ.eq.1)BC=NZ/2
+			if(s.eq.NZ/2+2  .and. BCZ.eq.0)BC=NZ/2-1
+			if(s.eq.NZ/2+2  .and. BCZ.eq.1)BC=-NZ/2+1
+    		if(s.eq.-NZ/2-2 .and. BCZ.eq.0)BC=-NZ/2+1
+			if(s.eq.-NZ/2-2 .and. BCZ.eq.1)BC=NZ/2-1
 	end select
 end function
 !!!!!!!!!!!!!!!!!!!!!!!!!!
+
+COMPLEX*16 function laplacian(gt,i,j,k)
+	use params
+	implicit none
+	integer :: i,j,k,BC
+	complex*16, dimension(-NX/2:NX/2,-NY/2:NY/2,-NZ/2:NZ/2) :: gt
+
+	laplacian = (-6.0d0*gt(i,j,k)+ gt(BC(i,0),BC(j+1,1),BC(k,2))&
+					+gt(BC(i,0),BC(j-1,1),BC(k,2))+gt(BC(i+1,0),BC(j,1),BC(k,2))&
+					+gt(BC(i-1,0),BC(j,1),BC(k,2))+gt(BC(i,0),BC(j,1),BC(k-1,2))&
+					+gt(BC(i,0),BC(j,1),BC(k+1,2)))/(DSPACE**2.0d0)
+end function
+
+COMPLEX*16 function ddx(gt,i,j,k)
+	use params
+	implicit none
+	integer :: i,j,k,BC
+	complex*16, dimension(-NX/2:NX/2,-NY/2:NY/2,-NZ/2:NZ/2) :: gt
+	
+	ddx = ((1.0d0/12.0d0)*gt(BC(i-2,0),j,k)-(2.0d0/3.0d0)*gt(BC(i-1,0),j,k)&
+					+ (2.0d0/3.0d0)*gt(BC(i+1,0),j,k)-(1.0d0/12.0d0)*gt(BC(i+2,0),j,k))/DSPACE
+end function
+
+COMPLEX*16 function ddy(gt,i,j,k)
+	use params
+	implicit none
+	integer :: BC,i,j,k
+	complex*16, dimension(-NX/2:NX/2,-NY/2:NY/2,-NZ/2:NZ/2) :: gt
+	ddy = ((1.0d0/12.0d0)*gt(i,BC(j-2,1),k)-(2.0d0/3.0d0)*gt(i,BC(j-1,1),k)&
+					+ (2.0d0/3.0d0)*gt(i,BC(j+1,1),k)-(1.0d0/12.0d0)*gt(i,BC(j+2,1),k))/DSPACE
+end function
+
+COMPLEX*16 function ddz(gt,i,j,k)
+	use params
+	implicit none
+	complex*16, dimension(-NX/2:NX/2,-NY/2:NY/2,-NZ/2:NZ/2) :: gt
+	integer :: BC,i,j,k
+	ddz = ((1.0d0/12.0d0)*gt(i,j,BC(k-2,2))-(2.0d0/3.0d0)*gt(i,j,BC(k-1,2))&
+					+ (2.0d0/3.0d0)*gt(i,j,BC(k+1,2))-(1.0d0/12.0d0)*gt(i,j,BC(k+2,2)))/DSPACE
+end function

@@ -60,9 +60,20 @@ subroutine initCond
 		end if
 	else if(initialCondType .eq. 1) then
 		call makeRandomPhase
+	else if(initialCondType .eq. 2) then
+		call loadPreviousState
+		call calc_OBJPOT
 	end if
 end subroutine
 !!!!!!!!!!!!!!!!!!!!!!
+subroutine loadPreviousState
+	use params
+	use output
+	implicit none
+	call read_wf_file(icr_filename)
+	INITSSTEP = RESUMESTEP
+	TIME = RESUMETIME
+end subroutine
 
 subroutine makeRandomPhase
 	use params
@@ -193,23 +204,17 @@ subroutine calc_energy(energy)
 	use params
 	implicit none
 	integer :: i,j,k
-	COMPLEX*16 :: uux,uuy,uuz,uu
-	integer, external :: BC
-	double precision :: energy,ep1,ep2,gg
+	COMPLEX*16 :: uux,uuy,uuz,ddx,ddy,ddz
+	double precision :: energy,ep1,ep2
 	double precision :: int_grid_3D
 	double precision, dimension(-NX/2:NX/2,-NY/2:NY/2,-NZ/2:NZ/2) :: dpsi2
-	energy = 0.0d0
-	gg=1.0d0
-	if(RHSType .eq. 1) then
-		gg=harm_osc_C
-	end if
 	!$OMP PARALLEL DO
 	do i = -NX/2, NX/2
 		do j = -NY/2, NY/2
 			do k = -NZ/2, NZ/2
-				uux=(GRID(BC(i+1,0),j,k)-GRID(BC(i-1,0),j,k))/(2.0d0*DSPACE)
-				uuy=(GRID(i,BC(j+1,1),k)-GRID(i,BC(j-1,1),k))/(2.0d0*DSPACE)
-				uuz=(GRID(i,j,BC(k+1,2))-GRID(i,j,BC(k-1,2)))/(2.0d0*DSPACE)
+				uux = ddx(GRID,i,j,k)
+				uuy = ddy(GRID,i,j,k)
+				uuz = ddz(GRID,i,j,k)
 				dpsi2(i,j,k) = dble(uux*conjg(uux) + uuy*conjg(uuy) + uuz*conjg(uuz))
 			end do
 		end do

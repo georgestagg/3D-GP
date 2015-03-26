@@ -58,4 +58,27 @@ Contains
 		r=NF90_put_var(ncdf_id, pot_id, DBLE(OBJPOT),istarting,icount)
 	end subroutine
 
+	subroutine close_file()
+		implicit none
+		integer :: r
+		r=NF90_close(ncdf_id)
+	end subroutine
+
+	subroutine read_wf_file(fname)
+		implicit none
+		integer :: r,rwf_ncid,rwf_re_id,rwf_im_id,rwf_pot_id
+		double precision, dimension(-NX/2:NX/2,-NY/2:NY/2,-NZ/2:NZ/2) :: realgrid,imaggrid,potgrid
+		character(len=2048) fname
+		r = NF90_open(path = fname, mode = nf90_nowrite, ncid = rwf_ncid)
+		r = NF90_inq_varid(rwf_ncid, "real",  rwf_re_id)
+		r = NF90_inq_varid(rwf_ncid, "imag",  rwf_im_id)
+		r = NF90_inq_varid(rwf_ncid,  "pot", rwf_pot_id)
+		r = NF90_get_var(rwf_ncid, rwf_re_id, realgrid)
+		r = NF90_get_var(rwf_ncid, rwf_im_id, imaggrid)
+		r = NF90_get_var(rwf_ncid, rwf_pot_id, potgrid)
+		GRID = realgrid + EYE*imaggrid
+		OBJPOT = potgrid
+		r = NF90_close(rwf_ncid)
+		write(6,*) "Loaded saved grid. Center point is: ", GRID(0,0,0)
+	end subroutine
 end module

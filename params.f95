@@ -35,6 +35,10 @@ module params
   double precision :: DVDT = 0.0d0
   double precision :: VTVTIME = 200.0d0
 
+  !Rotation term in GPE
+  double precision :: OMEGA = 0.0d0
+
+
   !Potential types - -1 none - 0 object - 3 afm-img
   logical :: enablePot = .true.
   logical :: enableTrap = .true.
@@ -71,12 +75,18 @@ module params
   !pot-image
   character(2048) :: pot_filename
 
-  !Initial initial condition 0 - default, 1 - Non-equilibrium
+  !Initial initial condition 0 - default, 1 - Non-equilibrium, 2 - restart
   integer :: initialCondType = 0
 
   !Non-equilibrium initial condition
   double precision :: ENERV = 0.75
   double precision :: NV = 0.75
+  
+  !initial condition resume
+  character(2048) :: icr_filename
+  double precision :: RESUMETIME = 0.0d0!1000.0*250.0*DTSIZE  lastdump*dumpwf*dtsize
+  integer :: RESUMESTEP = 1!1000*250 + 1 lastdump*dumpwf + 1
+
 
   !GLOBALS----------------------------------------------------------------------
   double precision :: VOB
@@ -86,12 +96,14 @@ module params
   complex*16, dimension(:,:,:), ALLOCATABLE :: GRID,OBJPOT
   double precision :: TIME, rpKC, rpAMP
   double precision :: OBJXVEL = 0.0d0,OBJYVEL = 0.0d0,OBJZVEL = 0.0d0
+  integer :: INITSSTEP = 1
 
 contains
   SUBROUTINE init_params
     IMPLICIT NONE
     afm_filename = repeat(" ", 2048) !Clear memory so entire string is blank
     pot_filename = repeat(" ", 2048) !Clear memory so entire string is blank
+    icr_filename = repeat(" ", 2048) !Clear memory so entire string is blank
     include 'params.in'
     ALLOCATE(GRID(-NX/2:NX/2,-NY/2:NY/2,-NZ/2:NZ/2))
     ALLOCATE(OBJPOT(-NX/2:NX/2,-NY/2:NY/2,-NZ/2:NZ/2))

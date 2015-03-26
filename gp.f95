@@ -4,8 +4,8 @@ program gp
 	character(len=80) fname
 	double precision :: ret
 	CALL init_params
-	write(fname, '(a,i0)') 'utils.',VOBS
-	open (8, FILE = fname)
+	write(fname, '(a)') 'utils.log'
+	open (8, FILE = fname,ACCESS = 'APPEND')
 	CALL init_RNG
 	!Initialise
 	GRID = 0
@@ -28,12 +28,10 @@ subroutine runit(steps,rt,plot)
 	use params
 	implicit none
 	integer :: steps,rt,i,plot
-	if (rt == 1) then
-		if (plot == 1) then
+	if (rt == 1 .and. INITSSTEP == 1 .and. plot == 1) then
 			call dump_wavefunction(0) !dump initial condition
-		end if
 	end if
-	do i = 1, steps
+	do i = INITSSTEP, steps
 		call iterate(rt)
 		TIME = TIME + dble(DT)
 		if (modulo(i,dumputil) == 0) then
@@ -41,7 +39,7 @@ subroutine runit(steps,rt,plot)
 				call calc_misc
 			end if
 		end if
-		if (modulo(i,10) == 0) then
+		if (modulo(i,dumputil) == 0) then
 			open (10, FILE = "STATUS")
 			if (rt == 1) then
 					write (unit=10,fmt="(a,i3,a,f6.2,a)")&
@@ -74,4 +72,5 @@ subroutine dump_wavefunction (II)
 	write(fname, '(i0.4,a,i0.4)') VOBS,'.dumpwf.',II/dumpwf
 	call make_file(fname)
 	call write_wf_file
+	call close_file
 	end subroutine
