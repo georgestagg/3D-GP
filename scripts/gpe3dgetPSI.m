@@ -1,4 +1,4 @@
-function [gridx,gridy,gridz,dens,phase,potential] = gpe3dgetWF(dirarg,startno,speed)
+function [gridx,gridy,gridz,psi,potential] = gpe3dgetPSI(dirarg,startno,speed)
 
 dirarg = regexprep(dirarg, '/$', '');
 datalocation = strcat(dirarg, '/%04d.dumpwf.%04d');
@@ -15,10 +15,6 @@ psi = real + 1i.*imag;
 
 %psi = A(4,:) + 1i*A(5,:);
 psi = permute(psi,[2,1,3]);
-
-dens = psi.*conj(psi);
-phase = atan2(imag,real);
-phase = permute(phase,[2,1,3]);
 potential = permute(potential,[2,1,3]);
 
 fclose('all');
