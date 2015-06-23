@@ -16,7 +16,7 @@ ky=(-(Ny-1)/2:(Ny-1)/2);
 kz=(-(Nz-1)/2:(Nz-1)/2);
 
 
-for kwv=0:60
+for kwv=500:500
     disp(num2str(kwv));
     w1 = v1;
     for j=1:Nx
