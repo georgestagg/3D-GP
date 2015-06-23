@@ -9,7 +9,7 @@ subroutine calc_OBJPOT
 		if(potType .eq. 0) then
 			call calc_OBJPOT_obj
 		end if
-		if(potType .eq. 6) then
+		if(potType .eq. 2) then
 			call calc_OBJPOT_cyl
 		end if
 		if(potType .eq. 3) then
@@ -21,6 +21,12 @@ subroutine calc_OBJPOT
 		if(potType .eq. 5) then
 			call calc_OBJPOT_obj_with_floor
 		end if
+		if(potType .eq. 6) then
+			call calc_OBJPOT_obj_with_floor_dip
+		end if
+		if(potType .eq. 7) then
+			call calc_OBJPOT_obj_with_floor_sin
+		end if		
 	end if
 	if (enableTrap) then
 	if (trapType .eq. 0) then
@@ -120,6 +126,47 @@ subroutine calc_OBJPOT_obj_with_floor
 		do j = -NY/2,NY/2
 			do k = -NZ/2,-NZ/2+10
 				OBJPOT(i,j,k) = OBJHEIGHT
+			end do
+		end do
+	end do
+	!$OMP END PARALLEL DO
+end subroutine
+
+subroutine calc_OBJPOT_obj_with_floor_dip
+	use params
+	implicit none
+	integer :: i,j,k,l,obj
+	double precision :: rx,ry,rz,r2
+	!$OMP PARALLEL DO
+	do i = -NX/2,NX/2
+		do j = -NY/2,NY/2
+			do k = -NZ/2,-NZ/2+20
+				l = (i*DSPACE)*cos(FLR) - (j*DSPACE)*sin(FLR)
+				if(k*DSPACE < min(5.0d0,5.0d0*(l/10.0d0)**2.0d0)-26.0d0) then
+					OBJPOT(i,j,k) = OBJHEIGHT
+				end if
+			end do
+		end do
+	end do
+	!$OMP END PARALLEL DO
+end subroutine
+
+subroutine calc_OBJPOT_obj_with_floor_sin
+	use params
+	implicit none
+	integer :: i,j,k,l,obj
+	double precision :: rx,ry,rz,r2
+	!$OMP PARALLEL DO
+	do i = -NX/2,NX/2
+		do j = -NY/2,NY/2
+			do k = -NZ/2,-NZ/2+20
+				l = (i*DSPACE)*cos(FLR) - (j*DSPACE)*sin(FLR)
+				if (abs(l) > 30) then
+					l = 9.86
+				end if
+				if(k*DSPACE < 5.0*cos(3.1415+l/6.28)-21.0) then
+					OBJPOT(i,j,k) = OBJHEIGHT
+				end if
 			end do
 		end do
 	end do

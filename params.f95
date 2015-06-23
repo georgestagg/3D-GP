@@ -63,7 +63,9 @@ module params
   double precision :: TYSCALE = 1.0d0
   double precision :: TZSCALE = 1.0d0
   double precision :: TR0 = 0.0d0
-
+  !Floor
+  double precision :: FLR = 0.0d0
+  
   !AFM-IMAGE
   character(2048) :: afm_filename
   integer :: afmRES = 256
