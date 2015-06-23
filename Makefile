@@ -1,11 +1,11 @@
 
 FC = gfortran
 
-FCFLAGS = -O3 -fcheck=all -fopenmp
+FCFLAGS = -O3 -fopenmp
 
 LDFLAGS = -L/usr/lib/ -L/usr/local/lib/ -lfftw3 -lm -lnetcdff -lnetcdf 
 
-LD_LIBRARY_PATH = -I/usr/local/include/ -I/usr/include/
+LDLIB = -I/state/partition1/apps/fftw/fftw-3.3.4/include/ -I/home/a8034837/libs/netcdf-fortran-4.4.2/include/ -I/usr/local/include/ -I/usr/include/
 
 PROGRAMS = gp
 
@@ -18,10 +18,10 @@ gp: params.o rhs.o output.o bitmap.o utils.o potential.o
 	$(FC) $(FCFLAGS) -o $@ $^ $(LDFLAGS)
 
 %.o: %.f95
-	$(FC) $(FCFLAGS) -c $< $(LD_LIBRARY_PATH)
+	$(FC) $(FCFLAGS) -c $< $(LDLIB)
 
 %.o: %.F95
-	$(FC) $(FCFLAGS) -c $< $(LD_LIBRARY_PATH)
+	$(FC) $(FCFLAGS) -c $< $(LDLIB)
 
 .PHONY: clean veryclean
 

@@ -69,7 +69,11 @@ subroutine dump_wavefunction (II)
 	implicit none
 	integer :: II,i,j,k
 	character(len=80) fname
-	write(fname, '(i0.4,a,i0.4)') VOBS,'.dumpwf.',II/dumpwf
+	if(II/dumpwf < 10000) then
+		write(fname, '(i0.4,a,i0.4)') VOBS,'.dumpwf.',modulo(II/dumpwf,10000)
+	else
+		write(fname, '(i0.4,a,i0.4)') VOBS,'.dumpwg.',modulo(II/dumpwf,10000)
+	end if 
 	call make_file(fname)
 	call write_wf_file
 	call close_file
