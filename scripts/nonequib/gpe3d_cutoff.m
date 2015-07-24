@@ -1,4 +1,4 @@
-function [ndens,nphase] = gpe3d_cutoff(gridx,gridy,gridz,dens,phase,kc)
+function [ndens,nphase] = gpe3d_cutoff(dens,phase,kc)
 dims = size(dens);
 Nx = dims(1);
 Ny = dims(2);
