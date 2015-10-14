@@ -1,8 +1,13 @@
 function [gridx,gridy,gridz,dens,phase,potential] = gpe3dgetWF(dirarg,startno,speed)
 
 dirarg = regexprep(dirarg, '/$', '');
-datalocation = strcat(dirarg, '/%04d.dumpwf.%04d');
-fname = sprintf(datalocation,speed,startno);
+if(startno < 10000)
+    datalocation = strcat(dirarg, '/%04d.dumpwf.%04d');
+    fname = sprintf(datalocation,speed,startno);
+elseif (startno < 20000)
+    datalocation = strcat(dirarg, '/%04d.dumpwg.%04d');
+    fname = sprintf(datalocation,speed,startno-10000);
+end
 
 %i=netcdf.open(fname);
 gridx = ncread(fname,'x');
