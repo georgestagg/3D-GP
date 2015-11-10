@@ -225,6 +225,19 @@ subroutine calc_energy(energy)
 	energy = 0.5d0*ep1 + 0.5d0*ep2
 end subroutine
 
+subroutine insert_vortex_line_with_ghosts_xy(xloc,yloc,zloc,circ,rot,amp1,amp2,kk,ll,k3,dtheta)
+	use params
+	implicit none
+	integer :: i,j,k,rot,circ
+	double precision :: xloc,yloc,zloc,amp1,amp2,kk,ll,dtheta,rs,xx,yy,zz,cd,sd,k3
+	call insert_vortex_line(xloc,yloc,zloc,circ,rot,amp1,amp2,kk,ll,k3,dtheta)
+	call insert_vortex_line(xloc+(NX*DSPACE),yloc,zloc,circ,rot,amp1,amp2,kk,ll,k3,dtheta)
+	call insert_vortex_line(xloc,yloc+(NY*DSPACE),zloc,circ,rot,amp1,amp2,kk,ll,k3,dtheta)
+	call insert_vortex_line(xloc-(NX*DSPACE),yloc,zloc,circ,rot,amp1,amp2,kk,ll,k3,dtheta)
+	call insert_vortex_line(xloc,yloc-(NY*DSPACE),zloc,circ,rot,amp1,amp2,kk,ll,k3,dtheta)
+
+end subroutine
+
 subroutine insert_vortex_line(xloc,yloc,zloc,circ,rot,amp1,amp2,kk,ll,k3,dtheta)
 	use params
 	implicit none

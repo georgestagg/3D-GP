@@ -12,7 +12,7 @@ PROGRAMS = gp
 
 all: $(PROGRAMS)
 
-gp: params.o rhs.o output.o bitmap.o utils.o potential.o
+gp: params.o rhs.o output.o vimprint.o bitmap.o utils.o potential.o
 
 %: %.o
 	$(FC) $(FCFLAGS) -o $@ $^ $(LDFLAGS)

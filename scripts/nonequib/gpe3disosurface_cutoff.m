@@ -34,6 +34,10 @@ spatial_av1=mean(mean(mean(ndens)));
 value1=th*spatial_av1;
 %figure
 daspect([1,1,1]);
+ndens(150:193,:,:) = 1;
+ndens(1:43,:,:) = 1;
+ndens(:,150:193,:) = 1;
+ndens(:,1:43,:) = 1;
 p1 = patch(isosurface(gridx,gridy,gridz,ndens,value1));
 isonormals(gridx,gridy,gridz,ndens,p1);
 set(p1,'facecolor',col,'edgecolor','none','FaceAlpha',alphac);
